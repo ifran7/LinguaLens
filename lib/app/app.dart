@@ -16,6 +16,9 @@ import '../features/batches/presentation/screens/enroll_student_screen.dart';
 import '../features/students/presentation/screens/student_detail_screen.dart';
 import '../features/students/presentation/screens/student_form_screen.dart';
 import '../features/students/presentation/screens/students_list_screen.dart';
+import '../features/attendance/presentation/screens/attendance_home_screen.dart';
+import '../features/attendance/presentation/screens/attendance_session_screen.dart';
+import '../features/attendance/presentation/screens/student_attendance_screen.dart';
 import 'app_state.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -80,18 +83,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/attendance',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Attendance',
-          icon: Icons.fact_check_rounded,
-          cta: 'Start marking',
+        builder: (ctx, state) => const AttendanceHomeScreen(),
+      ),
+      GoRoute(
+        path: '/attendance/batch/:batchId',
+        builder: (ctx, state) => AttendanceSessionScreen(
+          batchId: state.pathParameters['batchId']!,
+          initialDate: state.extra is DateTime ? state.extra as DateTime : null,
+        ),
+      ),
+      GoRoute(
+        path: '/students/:id/attendance',
+        builder: (ctx, state) => StudentAttendanceScreen(
+          studentId: state.pathParameters['id']!,
+          batchId: state.uri.queryParameters['batchId'],
         ),
       ),
       GoRoute(
         path: '/attendance/student/:id/calendar',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Attendance calendar',
-          icon: Icons.calendar_month_rounded,
-          cta: 'Start marking',
+        builder: (ctx, state) => StudentAttendanceScreen(
+          studentId: state.pathParameters['id']!,
+          batchId: state.uri.queryParameters['batchId'],
         ),
       ),
       GoRoute(

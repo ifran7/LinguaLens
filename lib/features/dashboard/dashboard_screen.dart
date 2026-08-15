@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_widgets.dart';
+import '../../core/utils/date_utils.dart';
+import '../attendance/providers/attendance_provider.dart';
 import '../students/providers/student_provider.dart';
 import '../batches/providers/batch_provider.dart';
 
@@ -140,7 +142,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   MetricCard(
                     label: l.t('attendanceToday'),
-                    value: '—',
+                    value: ref
+                        .watch(
+                          attendanceDailySummaryProvider(
+                            normalizeDate(DateTime.now()),
+                          ),
+                        )
+                        .when(
+                          data: (summary) =>
+                              '${summary.presentCount}/${summary.expectedStudentCount}',
+                          loading: () => '…',
+                          error: (_, _) => '—',
+                        ),
                     icon: Icons.fact_check_rounded,
                     color: AppColors.success,
                     onTap: () => context.push('/attendance'),

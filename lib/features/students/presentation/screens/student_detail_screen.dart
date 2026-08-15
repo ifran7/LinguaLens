@@ -11,6 +11,7 @@ import '../../../../core/services/future_services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../batches/providers/batch_provider.dart';
+import '../../../attendance/presentation/widgets/student_attendance_summary_card.dart';
 import '../../domain/entities/student_entity.dart';
 import '../../providers/student_provider.dart';
 import '../widgets/student_ui_utils.dart';
@@ -273,15 +274,7 @@ class StudentDetailScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              _InfoSection(
-                title: context.l10n.t('attendanceSummary'),
-                children: [
-                  _PlaceholderRow(
-                    icon: Icons.fact_check_outlined,
-                    label: context.l10n.t('noAttendanceRecords'),
-                  ),
-                ],
-              ),
+              StudentAttendanceSummaryCard(studentId: student.id),
               const SizedBox(height: 20),
               OutlinedButton.icon(
                 onPressed: () => _toggleArchive(context, ref, student),

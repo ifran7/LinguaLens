@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/utils/currency_utils.dart';
+import '../../../attendance/presentation/widgets/batch_attendance_summary_card.dart';
+import '../../../attendance/providers/attendance_provider.dart';
 import '../../domain/entities/batch_entity.dart';
 import '../../providers/batch_provider.dart';
 import '../widgets/batch_student_list.dart';
@@ -121,6 +123,7 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
               ref.invalidate(batchDetailProvider(widget.batchId));
               ref.invalidate(batchStudentCountProvider(widget.batchId));
               ref.invalidate(batchEnrollmentsProvider(widget.batchId));
+              ref.invalidate(batchAttendanceDaySummaryProvider);
             },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -129,6 +132,8 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
                 _Header(batch: batch),
                 const SizedBox(height: 18),
                 _OverviewCard(batch: batch),
+                const SizedBox(height: 18),
+                BatchAttendanceSummaryCard(batchId: batch.id),
                 const SizedBox(height: 18),
                 Row(
                   children: [
