@@ -3,12 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/utils/currency_utils.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/spacing_tokens.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../../core/widgets/currency_amount_text.dart';
+import '../../../../core/widgets/premium_widgets.dart';
 import '../../../batches/providers/batch_provider.dart';
 import '../../../attendance/presentation/widgets/student_attendance_summary_card.dart';
 import '../../../fees/providers/fee_provider.dart';
@@ -214,7 +217,9 @@ class StudentDetailScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
+              _PreferredScheduleCard(student: student),
+              const SizedBox(height: AppSpacing.lg),
               Row(
                 children: [
                   Expanded(
@@ -278,6 +283,91 @@ class StudentDetailScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _PreferredScheduleCard extends StatelessWidget {
+  const _PreferredScheduleCard({required this.student});
+
+  final StudentEntity student;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final labels = <int, String>{
+      DateTime.monday: l.t('mondayShort'),
+      DateTime.tuesday: l.t('tuesdayShort'),
+      DateTime.wednesday: l.t('wednesdayShort'),
+      DateTime.thursday: l.t('thursdayShort'),
+      DateTime.friday: l.t('fridayShort'),
+      DateTime.saturday: l.t('saturdayShort'),
+      DateTime.sunday: l.t('sundayShort'),
+    };
+    final hasSchedule =
+        student.preferredStartTime.isNotEmpty ||
+        student.preferredWeekdays.isNotEmpty ||
+        student.preferredScheduleNote.isNotEmpty;
+    return PremiumCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: hasSchedule
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.schedule_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Text(
+                        l.t('preferredSchedule'),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    if (student.preferredStartTime.isNotEmpty)
+                      Text(
+                        student.preferredStartTime,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                      ),
+                  ],
+                ),
+                if (student.preferredWeekdays.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: student.preferredWeekdays
+                        .where(labels.containsKey)
+                        .map(
+                          (day) => Chip(
+                            avatar: const Icon(Icons.event_rounded, size: 15),
+                            label: Text(labels[day]!),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+                if (student.preferredScheduleNote.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    student.preferredScheduleNote,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            )
+          : _PlaceholderRow(
+              icon: Icons.schedule_outlined,
+              label: l.t('noPreferredSchedule'),
+            ),
     );
   }
 }
@@ -369,7 +459,7 @@ class _StudentBatchTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${batch.subject} • ${DateFormat('dd MMM yyyy').format(enrollment.joiningDate)}',
+                    '${batch.subject} • ${formatDayMonthYear(enrollment.joiningDate)}',
                     style: Theme.of(context).textTheme.bodySmall
                         ?.copyWith(color: AppColors.muted),
                   ),
@@ -380,10 +470,11 @@ class _StudentBatchTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  formatFee(effectiveFee),
-                  style: Theme.of(context).textTheme.labelLarge
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                CurrencyAmountText(
+                  amount: effectiveFee,
+                  size: CurrencyAmountSize.sm,
+                  tone: CurrencyAmountTone.success,
+                  compact: true,
                 ),
                 if (enrollment.customFee > 0)
                   Text(

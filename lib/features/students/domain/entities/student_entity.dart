@@ -16,6 +16,9 @@ class StudentEntity {
     this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
+    this.preferredStartTime = '',
+    this.preferredWeekdays = const [],
+    this.preferredScheduleNote = '',
   });
 
   final String id;
@@ -32,6 +35,9 @@ class StudentEntity {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String preferredStartTime;
+  final List<int> preferredWeekdays;
+  final String preferredScheduleNote;
 
   StudentEntity copyWith({
     String? id,
@@ -48,6 +54,9 @@ class StudentEntity {
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? preferredStartTime,
+    List<int>? preferredWeekdays,
+    String? preferredScheduleNote,
   }) => StudentEntity(
     id: id ?? this.id,
     fullName: fullName ?? this.fullName,
@@ -63,6 +72,9 @@ class StudentEntity {
     isActive: isActive ?? this.isActive,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    preferredStartTime: preferredStartTime ?? this.preferredStartTime,
+    preferredWeekdays: preferredWeekdays ?? this.preferredWeekdays,
+    preferredScheduleNote: preferredScheduleNote ?? this.preferredScheduleNote,
   );
 
   StudentModel toModel() => StudentModel(
@@ -80,6 +92,9 @@ class StudentEntity {
     isActive: isActive,
     createdAt: createdAt,
     updatedAt: updatedAt,
+    preferredStartTime: preferredStartTime,
+    preferredWeekdays: preferredWeekdays,
+    preferredScheduleNote: preferredScheduleNote,
   );
 
   static StudentEntity fromModel(StudentModel model) => StudentEntity(
@@ -97,6 +112,9 @@ class StudentEntity {
     isActive: model.isActive,
     createdAt: model.createdAt,
     updatedAt: model.updatedAt,
+    preferredStartTime: model.preferredStartTime,
+    preferredWeekdays: model.preferredWeekdays,
+    preferredScheduleNote: model.preferredScheduleNote,
   );
 
   @override

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/currency_amount_text.dart';
+
 class FeeSummaryCard extends StatelessWidget {
   const FeeSummaryCard({
     super.key,
@@ -8,6 +10,7 @@ class FeeSummaryCard extends StatelessWidget {
     required this.color,
     required this.icon,
     this.subtitle,
+    this.amount,
   });
 
   final String label;
@@ -15,6 +18,7 @@ class FeeSummaryCard extends StatelessWidget {
   final Color color;
   final IconData icon;
   final String? subtitle;
+  final double? amount;
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +41,20 @@ class FeeSummaryCard extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white, size: 22),
           const SizedBox(height: 18),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleLarge
-                ?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
-          ),
+          if (amount != null)
+            CurrencyAmountText(
+              amount: amount!,
+              size: CurrencyAmountSize.lg,
+              color: Colors.white,
+            )
+          else
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleLarge
+                  ?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
+            ),
           const SizedBox(height: 4),
           Text(
             label,

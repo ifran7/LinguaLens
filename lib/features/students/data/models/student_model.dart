@@ -17,6 +17,9 @@ class StudentModel extends HiveObject {
     this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
+    this.preferredStartTime = '',
+    this.preferredWeekdays = const [],
+    this.preferredScheduleNote = '',
   });
 
   @HiveField(0)
@@ -47,6 +50,12 @@ class StudentModel extends HiveObject {
   DateTime createdAt;
   @HiveField(13)
   DateTime updatedAt;
+  @HiveField(14)
+  String preferredStartTime;
+  @HiveField(15)
+  List<int> preferredWeekdays;
+  @HiveField(16)
+  String preferredScheduleNote;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -63,6 +72,9 @@ class StudentModel extends HiveObject {
     'isActive': isActive,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
+    'preferredStartTime': preferredStartTime,
+    'preferredWeekdays': preferredWeekdays,
+    'preferredScheduleNote': preferredScheduleNote,
   };
 
   factory StudentModel.fromJson(Map<String, dynamic> json) => StudentModel(
@@ -82,6 +94,12 @@ class StudentModel extends HiveObject {
         DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
     updatedAt:
         DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+    preferredStartTime: json['preferredStartTime'] as String? ?? '',
+    preferredWeekdays: (json['preferredWeekdays'] as List<dynamic>? ?? const [])
+        .whereType<num>()
+        .map((value) => value.toInt())
+        .toList(),
+    preferredScheduleNote: json['preferredScheduleNote'] as String? ?? '',
   );
 }
 
@@ -110,13 +128,19 @@ class StudentModelAdapter extends TypeAdapter<StudentModel> {
       isActive: fields[11] as bool? ?? true,
       createdAt: fields[12] as DateTime,
       updatedAt: fields[13] as DateTime,
+      preferredStartTime: fields[14] as String? ?? '',
+      preferredWeekdays: (fields[15] as List<dynamic>? ?? const [])
+          .whereType<num>()
+          .map((value) => value.toInt())
+          .toList(),
+      preferredScheduleNote: fields[16] as String? ?? '',
     );
   }
 
   @override
   void write(BinaryWriter writer, StudentModel obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(17)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -144,6 +168,12 @@ class StudentModelAdapter extends TypeAdapter<StudentModel> {
       ..writeByte(12)
       ..write(obj.createdAt)
       ..writeByte(13)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(14)
+      ..write(obj.preferredStartTime)
+      ..writeByte(15)
+      ..write(obj.preferredWeekdays)
+      ..writeByte(16)
+      ..write(obj.preferredScheduleNote);
   }
 }

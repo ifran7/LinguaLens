@@ -115,6 +115,7 @@ class _FeeDashboardScreenState extends ConsumerState<FeeDashboardScreen> {
                         FeeSummaryCard(
                           label: context.l10n.t('totalFee'),
                           value: formatFee(aggregate?.totalAssigned ?? 0),
+                          amount: aggregate?.totalAssigned ?? 0,
                           color: Theme.of(context).colorScheme.primary,
                           icon: Icons.receipt_long_rounded,
                         ),
@@ -122,6 +123,7 @@ class _FeeDashboardScreenState extends ConsumerState<FeeDashboardScreen> {
                         FeeSummaryCard(
                           label: context.l10n.t('collected'),
                           value: formatFee(aggregate?.totalCollected ?? 0),
+                          amount: aggregate?.totalCollected ?? 0,
                           color: AppColors.success,
                           icon: Icons.check_circle_rounded,
                         ),
@@ -129,6 +131,7 @@ class _FeeDashboardScreenState extends ConsumerState<FeeDashboardScreen> {
                         FeeSummaryCard(
                           label: context.l10n.t('due'),
                           value: formatFee(aggregate?.totalDue ?? 0),
+                          amount: aggregate?.totalDue ?? 0,
                           color: (aggregate?.totalDue ?? 0) > 0
                               ? AppColors.danger
                               : AppColors.success,
@@ -138,6 +141,7 @@ class _FeeDashboardScreenState extends ConsumerState<FeeDashboardScreen> {
                         FeeSummaryCard(
                           label: context.l10n.t('today'),
                           value: formatFee(state.collectedToday),
+                          amount: state.collectedToday,
                           color: Colors.teal,
                           icon: Icons.today_rounded,
                         ),

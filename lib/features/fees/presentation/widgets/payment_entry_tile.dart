@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/currency_utils.dart';
+import '../../../../core/widgets/currency_amount_text.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../domain/entities/payment_entity.dart';
 import '../../domain/entities/payment_method.dart';
@@ -33,12 +33,10 @@ class PaymentEntryTile extends StatelessWidget {
       title: Row(
         children: [
           Expanded(
-            child: Text(
-              formatFee(payment.amount),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.success,
-                fontWeight: FontWeight.w800,
-              ),
+            child: CurrencyAmountText(
+              amount: payment.amount,
+              size: CurrencyAmountSize.md,
+              tone: CurrencyAmountTone.success,
             ),
           ),
           if (onDelete != null)

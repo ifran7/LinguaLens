@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../localization/app_localizations.dart';
 import '../theme/app_theme.dart';
+import '../theme/spacing_tokens.dart';
+import '../theme/text_tokens.dart';
+import 'premium_widgets.dart';
 
 class AppPage extends StatelessWidget {
   const AppPage({
@@ -41,7 +44,7 @@ class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(20),
+    this.padding = AppSpacing.card,
     this.color,
   });
 
@@ -51,10 +54,7 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: color,
-      child: Padding(padding: padding, child: child),
-    );
+    return PremiumCard(padding: padding, color: color, child: child);
   }
 }
 
@@ -75,7 +75,7 @@ class SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        Text(title, style: AppTextTokens.sectionTitle),
         if (actionLabel != null)
           TextButton(onPressed: onAction, child: Text(actionLabel!)),
       ],
@@ -326,8 +326,10 @@ class MetricCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
-      child: AppCard(
-        padding: const EdgeInsets.all(16),
+      child: PremiumCard(
+        padding: AppSpacing.lg == 16
+            ? const EdgeInsets.all(AppSpacing.lg)
+            : AppSpacing.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

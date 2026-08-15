@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/currency_utils.dart';
+import '../../../../core/widgets/currency_amount_text.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../batches/domain/entities/batch_entity.dart';
 import '../../../students/domain/entities/student_entity.dart';
@@ -110,9 +110,9 @@ class FeeRecordCard extends StatelessWidget {
                   _Amount(
                     label: context.l10n.t('dueAmount'),
                     value: record.dueAmount,
-                    color: record.dueAmount > 0
-                        ? AppColors.danger
-                        : AppColors.success,
+                    tone: record.dueAmount > 0
+                        ? CurrencyAmountTone.danger
+                        : CurrencyAmountTone.success,
                   ),
                 ],
               ),
@@ -140,13 +140,13 @@ class _Amount extends StatelessWidget {
     required this.label,
     required this.value,
     this.muted = false,
-    this.color,
+    this.tone,
   });
 
   final String label;
   final double value;
   final bool muted;
-  final Color? color;
+  final CurrencyAmountTone? tone;
 
   @override
   Widget build(BuildContext context) {
@@ -158,13 +158,12 @@ class _Amount extends StatelessWidget {
           style: Theme.of(context).textTheme.labelSmall
               ?.copyWith(color: AppColors.muted),
         ),
-        Text(
-          formatFee(value),
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: color ?? (muted ? AppColors.muted : null),
-            fontWeight: FontWeight.w700,
-            decoration: muted ? TextDecoration.lineThrough : null,
-          ),
+        CurrencyAmountText(
+          amount: value,
+          size: CurrencyAmountSize.sm,
+          tone:
+              tone ??
+              (muted ? CurrencyAmountTone.muted : CurrencyAmountTone.normal),
         ),
       ],
     );

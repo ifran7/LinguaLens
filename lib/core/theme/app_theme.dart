@@ -1,43 +1,82 @@
 import 'package:flutter/material.dart';
 
+import 'color_tokens.dart';
+import 'spacing_tokens.dart';
+import 'text_tokens.dart';
+
+/// Backwards-compatible aliases used by existing feature widgets.
 class AppColors {
-  static const primary = Color(0xFF3B82F6);
-  static const secondary = Color(0xFF8B5CF6);
-  static const success = Color(0xFF16A34A);
-  static const warning = Color(0xFFD97706);
-  static const danger = Color(0xFFDC2626);
-  static const ink = Color(0xFF111827);
-  static const muted = Color(0xFF64748B);
-  static const lightCanvas = Color(0xFFF6F8FC);
-  static const lightSurface = Color(0xFFFFFFFF);
-  static const darkCanvas = Color(0xFF0F172A);
-  static const darkSurface = Color(0xFF172033);
+  static const primary = PremiumColors.lightPrimary;
+  static const secondary = Color(0xFF7C3AED);
+  static const success = PremiumColors.lightSuccess;
+  static const warning = PremiumColors.lightWarning;
+  static const danger = PremiumColors.lightError;
+  static const ink = PremiumColors.lightTextPrimary;
+  static const muted = PremiumColors.lightTextTertiary;
+  static const lightCanvas = PremiumColors.lightSurfaceBase;
+  static const lightSurface = PremiumColors.lightSurfaceElevated;
+  static const darkCanvas = PremiumColors.darkSurfaceBase;
+  static const darkSurface = PremiumColors.darkSurfaceElevated;
 }
 
 class AppTheme {
   static ThemeData light({String fontFamily = 'Poppins'}) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.light,
+    final scheme = ColorScheme.light(
+      primary: PremiumColors.lightPrimary,
+      onPrimary: Colors.white,
+      primaryContainer: PremiumColors.lightPrimarySoft,
+      onPrimaryContainer: PremiumColors.lightPrimary,
+      secondary: const Color(0xFF6366F1),
+      onSecondary: Colors.white,
+      secondaryContainer: PremiumColors.lightSurfaceMuted,
+      onSecondaryContainer: PremiumColors.lightTextPrimary,
+      surface: PremiumColors.lightSurfaceElevated,
+      onSurface: PremiumColors.lightTextPrimary,
+      surfaceContainerHighest: PremiumColors.lightSurfaceMuted,
+      onSurfaceVariant: PremiumColors.lightTextSecondary,
+      outline: PremiumColors.lightBorderStrong,
+      outlineVariant: PremiumColors.lightBorderSubtle,
+      error: PremiumColors.lightError,
+      onError: Colors.white,
+      errorContainer: PremiumColors.lightErrorSoft,
+      onErrorContainer: PremiumColors.lightDueRed,
     );
     return _base(
       scheme,
-      AppColors.lightCanvas,
-      AppColors.lightSurface,
+      PremiumColors.lightSurfaceBase,
+      PremiumColors.lightSurfaceElevated,
       fontFamily,
+      isDark: false,
     );
   }
 
   static ThemeData dark({String fontFamily = 'Poppins'}) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.dark,
+    final scheme = ColorScheme.dark(
+      primary: PremiumColors.darkPrimary,
+      onPrimary: PremiumColors.darkSurfaceBase,
+      primaryContainer: PremiumColors.darkPrimarySoft,
+      onPrimaryContainer: PremiumColors.darkTextPrimary,
+      secondary: const Color(0xFFA5B4FC),
+      onSecondary: PremiumColors.darkSurfaceBase,
+      secondaryContainer: PremiumColors.darkSurfaceMuted,
+      onSecondaryContainer: PremiumColors.darkTextPrimary,
+      surface: PremiumColors.darkSurfaceElevated,
+      onSurface: PremiumColors.darkTextPrimary,
+      surfaceContainerHighest: PremiumColors.darkSurfaceMuted,
+      onSurfaceVariant: PremiumColors.darkTextSecondary,
+      outline: PremiumColors.darkBorderStrong,
+      outlineVariant: PremiumColors.darkBorderSubtle,
+      error: PremiumColors.darkError,
+      onError: PremiumColors.darkSurfaceBase,
+      errorContainer: PremiumColors.darkErrorSoft,
+      onErrorContainer: PremiumColors.darkTextPrimary,
     );
     return _base(
       scheme,
-      AppColors.darkCanvas,
-      AppColors.darkSurface,
+      PremiumColors.darkSurfaceBase,
+      PremiumColors.darkSurfaceElevated,
       fontFamily,
+      isDark: true,
     );
   }
 
@@ -45,107 +84,166 @@ class AppTheme {
     ColorScheme scheme,
     Color canvas,
     Color surface,
-    String fontFamily,
-  ) {
-    final textTheme = const TextTheme(
-      displaySmall: TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.5,
-      ),
-      headlineSmall: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.25,
-      ),
-      titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-      titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      bodyLarge: TextStyle(fontSize: 16, height: 1.45),
-      bodyMedium: TextStyle(fontSize: 14, height: 1.45),
-      labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-      labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+    String fontFamily, {
+    required bool isDark,
+  }) {
+    final textTheme = TextTheme(
+      displaySmall: AppTextTokens.screenTitle.copyWith(fontSize: 32),
+      headlineSmall: AppTextTokens.screenTitle,
+      titleLarge: AppTextTokens.sectionTitle.copyWith(fontSize: 20),
+      titleMedium: AppTextTokens.sectionTitle,
+      titleSmall: AppTextTokens.cardTitle,
+      bodyLarge: AppTextTokens.body.copyWith(fontSize: 16),
+      bodyMedium: AppTextTokens.body,
+      bodySmall: AppTextTokens.metadata,
+      labelLarge: AppTextTokens.bodyMedium,
+      labelMedium: AppTextTokens.metadata,
+      labelSmall: AppTextTokens.caption,
     ).apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface);
+
+    final border = BorderSide(color: scheme.outlineVariant, width: 1);
+    final radius = BorderRadius.circular(AppRadii.card);
+    final buttonShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadii.field),
+    );
 
     return ThemeData(
       useMaterial3: true,
+      brightness: scheme.brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: canvas,
+      canvasColor: canvas,
       textTheme: textTheme.apply(fontFamily: fontFamily),
       fontFamily: fontFamily,
+      visualDensity: VisualDensity.standard,
+      splashFactory: InkSparkle.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: canvas,
         foregroundColor: scheme.onSurface,
         elevation: 0,
+        scrolledUnderElevation: 1,
+        shadowColor: scheme.primary.withValues(alpha: 0.08),
         centerTitle: false,
         surfaceTintColor: Colors.transparent,
         titleTextStyle: textTheme.titleLarge?.copyWith(color: scheme.onSurface),
+        iconTheme: IconThemeData(color: scheme.onSurfaceVariant, size: 22),
       ),
       cardTheme: CardThemeData(
         color: surface,
-        elevation: 0,
+        elevation: isDark ? 0 : 1,
+        shadowColor: scheme.primary.withValues(alpha: isDark ? 0 : 0.06),
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: radius, side: border),
+      ),
+      dividerTheme: DividerThemeData(
+        color: scheme.outlineVariant,
+        thickness: 1,
+        space: AppSpacing.lg,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surface,
+        fillColor: isDark
+            ? PremiumColors.darkSurfaceMuted
+            : PremiumColors.lightSurfaceElevated,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(AppRadii.field),
+          borderSide: border,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.5),
-          ),
+          borderRadius: BorderRadius.circular(AppRadii.field),
+          borderSide: border,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadii.field),
           borderSide: BorderSide(color: scheme.primary, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.field),
+          borderSide: BorderSide(color: scheme.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.field),
+          borderSide: BorderSide(color: scheme.error, width: 1.5),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surface,
         elevation: 0,
-        indicatorColor: scheme.primary.withValues(alpha: 0.12),
+        height: 72,
+        indicatorColor: scheme.primary.withValues(alpha: isDark ? 0.24 : 0.12),
         labelTextStyle: WidgetStatePropertyAll(textTheme.labelMedium),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            size: 22,
+            color: states.contains(WidgetState.selected)
+                ? scheme.primary
+                : scheme.onSurfaceVariant,
+          ),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: isDark ? 0 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.field),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.hero),
+          side: border,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(48, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+          shape: buttonShape,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+          side: border,
+          shape: buttonShape,
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(48, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+          shape: buttonShape,
         ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          shape: buttonShape,
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        side: border,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.chip),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        labelStyle: textTheme.labelMedium,
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        elevation: isDark ? 0 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.field),
+        ),
       ),
     );
   }
