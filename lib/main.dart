@@ -13,6 +13,9 @@ import 'features/fees/data/models/fee_record_model.dart';
 import 'features/fees/data/models/payment_model.dart';
 import 'features/lessons/data/models/lesson_plan_model.dart';
 import 'features/lessons/data/models/syllabus_topic_model.dart';
+import 'features/messages/data/models/message_log_model.dart';
+import 'features/messages/data/models/message_template_model.dart';
+import 'features/messages/services/template_seeder.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +45,12 @@ Future<void> main() async {
   if (!Hive.isAdapterRegistered(8)) {
     Hive.registerAdapter(SyllabusTopicModelAdapter());
   }
+  if (!Hive.isAdapterRegistered(9)) {
+    Hive.registerAdapter(MessageTemplateModelAdapter());
+  }
+  if (!Hive.isAdapterRegistered(10)) {
+    Hive.registerAdapter(MessageLogModelAdapter());
+  }
   await Hive.openBox<StudentModel>('studentsBox');
   await Hive.openBox<BatchModel>('batchesBox');
   await Hive.openBox<BatchEnrollmentModel>('batchEnrollmentsBox');
@@ -50,7 +59,10 @@ Future<void> main() async {
   await Hive.openBox<PaymentModel>('paymentsBox');
   await Hive.openBox<LessonPlanModel>('lessonsBox');
   await Hive.openBox<SyllabusTopicModel>('syllabusTopicsBox');
+  await Hive.openBox<MessageTemplateModel>('messageTemplatesBox');
+  await Hive.openBox<MessageLogModel>('messageLogsBox');
   await Hive.openBox('metaBox');
+  await TemplateSeeder.seedIfNeeded();
   runApp(const ProviderScope(child: LinguaLensApp()));
 }
 

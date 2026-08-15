@@ -35,6 +35,34 @@ class BatchModel extends HiveObject {
   DateTime createdAt;
   @HiveField(9)
   DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'subject': subject,
+    'description': description,
+    'scheduleText': scheduleText,
+    'monthlyFeeDefault': monthlyFeeDefault,
+    'colorTagIndex': colorTagIndex,
+    'isActive': isActive,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory BatchModel.fromJson(Map<String, dynamic> json) => BatchModel(
+    id: json['id'] as String,
+    name: json['name'] as String? ?? '',
+    subject: json['subject'] as String? ?? '',
+    description: json['description'] as String? ?? '',
+    scheduleText: json['scheduleText'] as String? ?? '',
+    monthlyFeeDefault: (json['monthlyFeeDefault'] as num?)?.toDouble() ?? 0,
+    colorTagIndex: (json['colorTagIndex'] as num?)?.toInt() ?? 0,
+    isActive: json['isActive'] as bool? ?? true,
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 class BatchModelAdapter extends TypeAdapter<BatchModel> {

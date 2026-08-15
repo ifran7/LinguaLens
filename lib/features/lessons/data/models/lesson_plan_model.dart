@@ -47,6 +47,48 @@ class LessonPlanModel extends HiveObject {
   DateTime createdAt;
   @HiveField(13)
   DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'batchId': batchId,
+    'title': title,
+    'description': description,
+    'lessonDate': lessonDate.toIso8601String(),
+    'planType': planType,
+    'status': status,
+    'coveredTopicIds': coveredTopicIds,
+    'homework': homework,
+    'resourceLinks': resourceLinks,
+    'durationMinutes': durationMinutes,
+    'teacherNote': teacherNote,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory LessonPlanModel.fromJson(
+    Map<String, dynamic> json,
+  ) => LessonPlanModel(
+    id: json['id'] as String,
+    batchId: json['batchId'] as String,
+    title: json['title'] as String? ?? '',
+    description: json['description'] as String? ?? '',
+    lessonDate:
+        DateTime.tryParse(json['lessonDate'] as String? ?? '') ??
+        DateTime.now(),
+    planType: json['planType'] as String? ?? 'daily',
+    status: json['status'] as String? ?? 'planned',
+    coveredTopicIds: (json['coveredTopicIds'] as List?)
+        ?.whereType<String>()
+        .toList(),
+    homework: json['homework'] as String? ?? '',
+    resourceLinks: json['resourceLinks'] as String? ?? '',
+    durationMinutes: (json['durationMinutes'] as num?)?.toInt() ?? 0,
+    teacherNote: json['teacherNote'] as String? ?? '',
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 class LessonPlanModelAdapter extends TypeAdapter<LessonPlanModel> {

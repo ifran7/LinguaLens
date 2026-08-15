@@ -5,9 +5,15 @@ import 'package:go_router/go_router.dart';
 import '../core/localization/app_localizations.dart';
 import '../core/theme/app_theme.dart';
 import '../features/dashboard/dashboard_screen.dart';
-import '../features/modules/module_screens.dart';
+import '../features/modules/module_screens.dart' hide BackupRestoreScreen;
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/messages/presentation/screens/messages_center_screen.dart';
+import '../features/messages/presentation/screens/compose_message_screen.dart';
+import '../features/messages/presentation/screens/message_template_manager_screen.dart';
+import '../features/messages/presentation/screens/message_log_screen.dart';
+import '../features/settings/presentation/screens/settings_center_screen.dart';
+import '../features/settings/presentation/screens/backup_restore_screen.dart';
 import '../features/batches/domain/entities/batch_entity.dart';
 import '../features/batches/presentation/screens/batches_list_screen.dart';
 import '../features/batches/presentation/screens/batch_form_screen.dart';
@@ -177,15 +183,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/messages',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Messages',
-          icon: Icons.chat_bubble_outline_rounded,
-          cta: 'Message a parent',
+        builder: (ctx, state) => const MessagesCenterScreen(),
+      ),
+      GoRoute(
+        path: '/messages/compose',
+        builder: (ctx, state) => ComposeMessageScreen(
+          studentId: state.uri.queryParameters['studentId'],
+          batchId: state.uri.queryParameters['batchId'],
         ),
       ),
       GoRoute(
+        path: '/messages/templates',
+        builder: (ctx, state) => const MessageTemplateManagerScreen(),
+      ),
+      GoRoute(
+        path: '/messages/logs',
+        builder: (ctx, state) =>
+            MessageLogScreen(studentId: state.uri.queryParameters['studentId']),
+      ),
+      GoRoute(
         path: '/settings',
-        builder: (ctx, state) => const SettingsScreen(),
+        builder: (ctx, state) => const SettingsCenterScreen(),
       ),
       GoRoute(
         path: '/settings/language',

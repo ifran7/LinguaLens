@@ -32,6 +32,36 @@ class BatchEnrollmentModel extends HiveObject {
   DateTime createdAt;
   @HiveField(8)
   DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'studentId': studentId,
+    'batchId': batchId,
+    'joiningDate': joiningDate.toIso8601String(),
+    'customFee': customFee,
+    'isActive': isActive,
+    'note': note,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory BatchEnrollmentModel.fromJson(
+    Map<String, dynamic> json,
+  ) => BatchEnrollmentModel(
+    id: json['id'] as String,
+    studentId: json['studentId'] as String,
+    batchId: json['batchId'] as String,
+    joiningDate:
+        DateTime.tryParse(json['joiningDate'] as String? ?? '') ??
+        DateTime.now(),
+    customFee: (json['customFee'] as num?)?.toDouble() ?? 0,
+    isActive: json['isActive'] as bool? ?? true,
+    note: json['note'] as String? ?? '',
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 class BatchEnrollmentModelAdapter extends TypeAdapter<BatchEnrollmentModel> {

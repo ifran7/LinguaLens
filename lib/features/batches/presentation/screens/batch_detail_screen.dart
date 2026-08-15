@@ -143,25 +143,41 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
                 const SizedBox(height: 18),
                 BatchAttendanceSummaryCard(batchId: batch.id),
                 const SizedBox(height: 18),
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        l.t('enrolledStudents'),
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
-                      ),
+                    Text(
+                      l.t('enrolledStudents'),
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800),
                     ),
-                    TextButton.icon(
-                      onPressed: () => context.push(
-                        '/batches/${batch.id}/enroll',
-                        extra: batch,
-                      ),
-                      icon: const Icon(
-                        Icons.person_add_alt_1_rounded,
-                        size: 18,
-                      ),
-                      label: Text(l.t('enrollStudent')),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () => context.push(
+                            '/messages/compose?batchId=${batch.id}',
+                          ),
+                          icon: const Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            size: 18,
+                          ),
+                          label: Text(l.t('messageParent')),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => context.push(
+                            '/batches/${batch.id}/enroll',
+                            extra: batch,
+                          ),
+                          icon: const Icon(
+                            Icons.person_add_alt_1_rounded,
+                            size: 18,
+                          ),
+                          label: Text(l.t('enrollStudent')),
+                        ),
+                      ],
                     ),
                   ],
                 ),

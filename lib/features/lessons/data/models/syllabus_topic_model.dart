@@ -38,6 +38,38 @@ class SyllabusTopicModel extends HiveObject {
   DateTime createdAt;
   @HiveField(10)
   DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'batchId': batchId,
+    'title': title,
+    'description': description,
+    'orderIndex': orderIndex,
+    'isCompleted': isCompleted,
+    'completedDate': completedDate?.toIso8601String(),
+    'chapterName': chapterName,
+    'estimatedClasses': estimatedClasses,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory SyllabusTopicModel.fromJson(
+    Map<String, dynamic> json,
+  ) => SyllabusTopicModel(
+    id: json['id'] as String,
+    batchId: json['batchId'] as String,
+    title: json['title'] as String? ?? '',
+    description: json['description'] as String? ?? '',
+    orderIndex: (json['orderIndex'] as num?)?.toInt() ?? 0,
+    isCompleted: json['isCompleted'] as bool? ?? false,
+    completedDate: DateTime.tryParse(json['completedDate'] as String? ?? ''),
+    chapterName: json['chapterName'] as String? ?? '',
+    estimatedClasses: (json['estimatedClasses'] as num?)?.toInt() ?? 1,
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 class SyllabusTopicModelAdapter extends TypeAdapter<SyllabusTopicModel> {

@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/utils/currency_utils.dart';
-import '../../../../core/services/future_services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../batches/providers/batch_provider.dart';
@@ -93,29 +92,6 @@ class StudentDetailScreen extends ConsumerWidget {
       }
     }
     ref.invalidate(studentDetailProvider(student.id));
-  }
-
-  Future<void> _whatsapp(BuildContext context, StudentEntity student) async {
-    final ok = await MessagingService().launchWhatsApp(
-      formatPhoneForWhatsApp(student.parentPhone),
-      'Hello ${student.parentName.isEmpty ? '' : student.parentName}, this is a message from your teacher.',
-    );
-    if (!ok && context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Could not open WhatsApp')));
-    }
-  }
-
-  Future<void> _sms(BuildContext context, StudentEntity student) async {
-    final ok = await MessagingService().launchSms(
-      student.parentPhone,
-      'Hello ${student.parentName.isEmpty ? '' : student.parentName}, this is a message from your teacher.',
-    );
-    if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Could not open SMS')));
-    }
   }
 
   @override
@@ -245,7 +221,9 @@ class StudentDetailScreen extends ConsumerWidget {
                     child: OutlinedButton.icon(
                       onPressed: student.parentPhone.isEmpty
                           ? null
-                          : () => _whatsapp(context, student),
+                          : () => context.push(
+                              '/messages/compose?studentId=${student.id}',
+                            ),
                       icon: const Icon(Icons.chat_rounded),
                       label: Text(context.l10n.t('whatsappParent')),
                     ),
@@ -255,7 +233,9 @@ class StudentDetailScreen extends ConsumerWidget {
                     child: OutlinedButton.icon(
                       onPressed: student.parentPhone.isEmpty
                           ? null
-                          : () => _sms(context, student),
+                          : () => context.push(
+                              '/messages/compose?studentId=${student.id}',
+                            ),
                       icon: const Icon(Icons.sms_outlined),
                       label: Text(context.l10n.t('smsParent')),
                     ),

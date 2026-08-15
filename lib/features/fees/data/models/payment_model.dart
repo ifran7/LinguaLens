@@ -38,6 +38,38 @@ class PaymentModel extends HiveObject {
   DateTime createdAt;
   @HiveField(10)
   DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'feeRecordId': feeRecordId,
+    'studentId': studentId,
+    'batchId': batchId,
+    'monthKey': monthKey,
+    'amount': amount,
+    'paymentDate': paymentDate.toIso8601String(),
+    'paymentMethod': paymentMethod,
+    'note': note,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory PaymentModel.fromJson(Map<String, dynamic> json) => PaymentModel(
+    id: json['id'] as String,
+    feeRecordId: json['feeRecordId'] as String,
+    studentId: json['studentId'] as String,
+    batchId: json['batchId'] as String,
+    monthKey: json['monthKey'] as String,
+    amount: (json['amount'] as num?)?.toDouble() ?? 0,
+    paymentDate:
+        DateTime.tryParse(json['paymentDate'] as String? ?? '') ??
+        DateTime.now(),
+    paymentMethod: json['paymentMethod'] as String? ?? 'cash',
+    note: json['note'] as String? ?? '',
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 class PaymentModelAdapter extends TypeAdapter<PaymentModel> {

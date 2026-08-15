@@ -47,6 +47,42 @@ class StudentModel extends HiveObject {
   DateTime createdAt;
   @HiveField(13)
   DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'fullName': fullName,
+    'studentCode': studentCode,
+    'phone': phone,
+    'parentName': parentName,
+    'parentPhone': parentPhone,
+    'address': address,
+    'schoolName': schoolName,
+    'className': className,
+    'notes': notes,
+    'photoPath': photoPath,
+    'isActive': isActive,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory StudentModel.fromJson(Map<String, dynamic> json) => StudentModel(
+    id: json['id'] as String,
+    fullName: json['fullName'] as String? ?? '',
+    studentCode: json['studentCode'] as String? ?? '',
+    phone: json['phone'] as String? ?? '',
+    parentName: json['parentName'] as String? ?? '',
+    parentPhone: json['parentPhone'] as String? ?? '',
+    address: json['address'] as String? ?? '',
+    schoolName: json['schoolName'] as String? ?? '',
+    className: json['className'] as String? ?? '',
+    notes: json['notes'] as String? ?? '',
+    photoPath: json['photoPath'] as String? ?? '',
+    isActive: json['isActive'] as bool? ?? true,
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 class StudentModelAdapter extends TypeAdapter<StudentModel> {

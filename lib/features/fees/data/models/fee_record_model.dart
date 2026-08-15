@@ -35,6 +35,34 @@ class FeeRecordModel extends HiveObject {
   DateTime createdAt;
   @HiveField(9)
   DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'studentId': studentId,
+    'batchId': batchId,
+    'monthKey': monthKey,
+    'assignedFee': assignedFee,
+    'discountAmount': discountAmount,
+    'finalFee': finalFee,
+    'note': note,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory FeeRecordModel.fromJson(Map<String, dynamic> json) => FeeRecordModel(
+    id: json['id'] as String,
+    studentId: json['studentId'] as String,
+    batchId: json['batchId'] as String,
+    monthKey: json['monthKey'] as String,
+    assignedFee: (json['assignedFee'] as num?)?.toDouble() ?? 0,
+    discountAmount: (json['discountAmount'] as num?)?.toDouble() ?? 0,
+    finalFee: (json['finalFee'] as num?)?.toDouble() ?? 0,
+    note: json['note'] as String? ?? '',
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 class FeeRecordModelAdapter extends TypeAdapter<FeeRecordModel> {

@@ -13,6 +13,7 @@ import '../batches/providers/batch_provider.dart';
 import '../fees/providers/fee_provider.dart';
 import '../lessons/providers/lesson_provider.dart';
 import '../lessons/presentation/widgets/lesson_card.dart';
+import '../settings/providers/settings_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -50,6 +51,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final feeDashboard = ref.watch(feeDashboardProvider);
+    final settings = ref.watch(settingsProvider);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -139,34 +141,37 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     color: AppColors.secondary,
                     onTap: () => context.push('/batches'),
                   ),
-                  MetricCard(
-                    label: l.t('pendingFees'),
-                    value:
-                        feeDashboard.isLoading && feeDashboard.aggregate == null
-                        ? '…'
-                        : formatFee(feeDashboard.aggregate?.totalDue ?? 0),
-                    icon: Icons.account_balance_wallet_rounded,
-                    color: AppColors.warning,
-                    onTap: () => context.push('/fees'),
-                  ),
-                  MetricCard(
-                    label: l.t('attendanceToday'),
-                    value: ref
-                        .watch(
-                          attendanceDailySummaryProvider(
-                            normalizeDate(DateTime.now()),
+                  if (settings.showFeesOnDashboard)
+                    MetricCard(
+                      label: l.t('pendingFees'),
+                      value:
+                          feeDashboard.isLoading &&
+                              feeDashboard.aggregate == null
+                          ? '…'
+                          : formatFee(feeDashboard.aggregate?.totalDue ?? 0),
+                      icon: Icons.account_balance_wallet_rounded,
+                      color: AppColors.warning,
+                      onTap: () => context.push('/fees'),
+                    ),
+                  if (settings.showAttendanceOnDashboard)
+                    MetricCard(
+                      label: l.t('attendanceToday'),
+                      value: ref
+                          .watch(
+                            attendanceDailySummaryProvider(
+                              normalizeDate(DateTime.now()),
+                            ),
+                          )
+                          .when(
+                            data: (summary) =>
+                                '${summary.presentCount}/${summary.expectedStudentCount}',
+                            loading: () => '…',
+                            error: (_, _) => '—',
                           ),
-                        )
-                        .when(
-                          data: (summary) =>
-                              '${summary.presentCount}/${summary.expectedStudentCount}',
-                          loading: () => '…',
-                          error: (_, _) => '—',
-                        ),
-                    icon: Icons.fact_check_rounded,
-                    color: AppColors.success,
-                    onTap: () => context.push('/attendance'),
-                  ),
+                      icon: Icons.fact_check_rounded,
+                      color: AppColors.success,
+                      onTap: () => context.push('/attendance'),
+                    ),
                 ],
               ),
               const SizedBox(height: 30),
@@ -174,35 +179,37 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               const SizedBox(height: 14),
               _QuickActions(),
               const SizedBox(height: 30),
-              SectionHeader(
-                title: l.t('upcomingLessons'),
-                actionLabel: l.t('viewAll'),
-                onAction: () => context.push('/lessons'),
-              ),
-              const SizedBox(height: 12),
-              ref
-                  .watch(upcomingLessonsProvider)
-                  .when(
-                    loading: () => const LinearProgressIndicator(),
-                    error: (_, _) =>
-                        AppCard(child: Text(l.t('noUpcomingLessons'))),
-                    data: (items) => items.isEmpty
-                        ? AppCard(child: Text(l.t('noUpcomingLessons')))
-                        : Column(
-                            children: items
-                                .take(3)
-                                .map(
-                                  (item) => LessonCard(
-                                    item: item,
-                                    onTap: () => context.push(
-                                      '/lessons/${item.lesson.id}',
+              if (settings.showUpcomingLessons) ...[
+                SectionHeader(
+                  title: l.t('upcomingLessons'),
+                  actionLabel: l.t('viewAll'),
+                  onAction: () => context.push('/lessons'),
+                ),
+                const SizedBox(height: 12),
+                ref
+                    .watch(upcomingLessonsProvider)
+                    .when(
+                      loading: () => const LinearProgressIndicator(),
+                      error: (_, _) =>
+                          AppCard(child: Text(l.t('noUpcomingLessons'))),
+                      data: (items) => items.isEmpty
+                          ? AppCard(child: Text(l.t('noUpcomingLessons')))
+                          : Column(
+                              children: items
+                                  .take(3)
+                                  .map(
+                                    (item) => LessonCard(
+                                      item: item,
+                                      onTap: () => context.push(
+                                        '/lessons/${item.lesson.id}',
+                                      ),
                                     ),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                  ),
-              const SizedBox(height: 30),
+                                  )
+                                  .toList(),
+                            ),
+                    ),
+                const SizedBox(height: 30),
+              ],
               SectionHeader(
                 title: l.t('recentActivity'),
                 actionLabel: l.t('viewAll'),
@@ -313,7 +320,7 @@ class _FocusBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Keep your daily rhythm moving.',
+                    context.l10n.t('keepDailyRhythm'),
                     style: Theme.of(context).textTheme.bodyMedium
                         ?.copyWith(color: Colors.white.withValues(alpha: 0.82)),
                   ),

@@ -29,6 +29,32 @@ class AttendanceModel extends HiveObject {
   DateTime createdAt;
   @HiveField(7)
   DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'studentId': studentId,
+    'batchId': batchId,
+    'date': date.toIso8601String(),
+    'status': status,
+    'note': note,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory AttendanceModel.fromJson(
+    Map<String, dynamic> json,
+  ) => AttendanceModel(
+    id: json['id'] as String,
+    studentId: json['studentId'] as String,
+    batchId: json['batchId'] as String,
+    date: DateTime.tryParse(json['date'] as String? ?? '') ?? DateTime.now(),
+    status: json['status'] as String? ?? 'present',
+    note: json['note'] as String? ?? '',
+    createdAt:
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+  );
 }
 
 class AttendanceModelAdapter extends TypeAdapter<AttendanceModel> {
