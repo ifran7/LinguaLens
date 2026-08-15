@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_widgets.dart';
+import '../../core/utils/currency_utils.dart';
 import '../../core/utils/date_utils.dart';
 import '../attendance/providers/attendance_provider.dart';
 import '../students/providers/student_provider.dart';
 import '../batches/providers/batch_provider.dart';
+import '../fees/providers/fee_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -26,6 +28,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     Future.microtask(() async {
       await ref.read(studentsListProvider.notifier).loadStudents();
       await ref.read(batchesListProvider.notifier).loadBatches();
+      await ref.read(feeDashboardProvider.notifier).load();
     });
   }
 
@@ -44,6 +47,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final feeDashboard = ref.watch(feeDashboardProvider);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -135,7 +139,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   MetricCard(
                     label: l.t('pendingFees'),
-                    value: '৳0',
+                    value:
+                        feeDashboard.isLoading && feeDashboard.aggregate == null
+                        ? '…'
+                        : formatFee(feeDashboard.aggregate?.totalDue ?? 0),
                     icon: Icons.account_balance_wallet_rounded,
                     color: AppColors.warning,
                     onTap: () => context.push('/fees'),

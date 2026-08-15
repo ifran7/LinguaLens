@@ -19,6 +19,11 @@ import '../features/students/presentation/screens/students_list_screen.dart';
 import '../features/attendance/presentation/screens/attendance_home_screen.dart';
 import '../features/attendance/presentation/screens/attendance_session_screen.dart';
 import '../features/attendance/presentation/screens/student_attendance_screen.dart';
+import '../features/fees/presentation/screens/collect_payment_screen.dart';
+import '../features/fees/presentation/screens/fee_dashboard_screen.dart';
+import '../features/fees/presentation/screens/fee_generator_screen.dart';
+import '../features/fees/presentation/screens/fee_overview_screen.dart';
+import '../features/fees/presentation/screens/student_fee_history_screen.dart';
 import 'app_state.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -108,10 +113,34 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/fees',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Fees',
-          icon: Icons.account_balance_wallet_rounded,
-          cta: 'Record payment',
+        builder: (ctx, state) => const FeeDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/fees/overview',
+        builder: (ctx, state) => FeeOverviewScreen(
+          initialMonthKey: state.uri.queryParameters['monthKey'],
+          showOverdue: state.uri.queryParameters['overdue'] == 'true',
+        ),
+      ),
+      GoRoute(
+        path: '/fees/generate',
+        builder: (ctx, state) => FeeGeneratorScreen(
+          initialMonthKey: state.uri.queryParameters['monthKey'],
+        ),
+      ),
+      GoRoute(
+        path: '/fees/collect',
+        builder: (ctx, state) => CollectPaymentScreen(
+          studentId: state.uri.queryParameters['studentId'] ?? '',
+          batchId: state.uri.queryParameters['batchId'] ?? '',
+          monthKey: state.uri.queryParameters['monthKey'] ?? '',
+          feeRecordId: state.uri.queryParameters['feeRecordId'],
+        ),
+      ),
+      GoRoute(
+        path: '/fees/student/:studentId',
+        builder: (ctx, state) => StudentFeeHistoryScreen(
+          studentId: state.pathParameters['studentId']!,
         ),
       ),
       GoRoute(

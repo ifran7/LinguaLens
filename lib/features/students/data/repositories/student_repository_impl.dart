@@ -48,11 +48,11 @@ class StudentRepositoryImpl implements StudentRepository {
   @override
   Future<void> deleteStudent(String id) async {
     await _studentsBox.delete(id);
-    // Related boxes can be added here as later modules are introduced.
     for (final boxName in [
       'attendanceBox',
+      'batchEnrollmentsBox',
       'feeRecordsBox',
-      'enrollmentsBox',
+      'paymentsBox',
     ]) {
       if (Hive.isBoxOpen(boxName)) {
         final box = Hive.box(boxName);

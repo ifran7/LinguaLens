@@ -12,6 +12,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../batches/providers/batch_provider.dart';
 import '../../../attendance/presentation/widgets/student_attendance_summary_card.dart';
+import '../../../fees/providers/fee_provider.dart';
 import '../../domain/entities/student_entity.dart';
 import '../../providers/student_provider.dart';
 import '../widgets/student_ui_utils.dart';
@@ -264,15 +265,7 @@ class StudentDetailScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _StudentBatchesSection(studentId: student.id),
               const SizedBox(height: 16),
-              _InfoSection(
-                title: context.l10n.t('feeSummary'),
-                children: [
-                  _PlaceholderRow(
-                    icon: Icons.account_balance_wallet_outlined,
-                    label: context.l10n.t('noFeeRecords'),
-                  ),
-                ],
-              ),
+              _StudentFeeSummarySection(studentId: student.id),
               const SizedBox(height: 16),
               StudentAttendanceSummaryCard(studentId: student.id),
               const SizedBox(height: 20),
@@ -521,4 +514,133 @@ class _PlaceholderRow extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _StudentFeeSummarySection extends ConsumerWidget {
+  const _StudentFeeSummarySection({required this.studentId});
+
+  final String studentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summary = ref.watch(studentFeeSummaryProvider(studentId));
+    return summary.when(
+      loading: () => const Card(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ),
+      error: (_, _) => _InfoSection(
+        title: context.l10n.t('feeSummary'),
+        children: [
+          _PlaceholderRow(
+            icon: Icons.error_outline_rounded,
+            label: context.l10n.t('errorMessage'),
+          ),
+        ],
+      ),
+      data: (aggregate) {
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        context.l10n.t('feeSummary'),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.push('/fees/student/$studentId'),
+                      child: Text(context.l10n.t('viewFees')),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FeeMetric(
+                        label: context.l10n.t('totalPaid'),
+                        value: formatFee(aggregate.totalCollected),
+                        color: AppColors.success,
+                        icon: Icons.check_circle_outline_rounded,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _FeeMetric(
+                        label: context.l10n.t('remainingDue'),
+                        value: formatFee(aggregate.totalDue),
+                        color: AppColors.warning,
+                        icon: Icons.pending_actions_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '${aggregate.totalRecordCount} ${context.l10n.t('monthlyFees').toLowerCase()}',
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: AppColors.muted),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _FeeMetric extends StatelessWidget {
+  const _FeeMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(color: color, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ],
+      ),
+    );
+  }
 }

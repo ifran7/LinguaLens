@@ -5,10 +5,13 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/utils/currency_utils.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../attendance/presentation/widgets/batch_attendance_summary_card.dart';
 import '../../../attendance/providers/attendance_provider.dart';
 import '../../domain/entities/batch_entity.dart';
 import '../../providers/batch_provider.dart';
+import '../../../fees/providers/fee_provider.dart';
+import '../../../fees/presentation/widgets/fee_summary_card.dart';
 import '../widgets/batch_student_list.dart';
 
 class BatchDetailScreen extends ConsumerStatefulWidget {
@@ -124,6 +127,8 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
               ref.invalidate(batchStudentCountProvider(widget.batchId));
               ref.invalidate(batchEnrollmentsProvider(widget.batchId));
               ref.invalidate(batchAttendanceDaySummaryProvider);
+              ref.invalidate(batchFeeSummaryProvider(widget.batchId));
+              ref.invalidate(feeDashboardProvider);
             },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -163,12 +168,7 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
                       context.push('/batches/${batch.id}/enroll', extra: batch),
                 ),
                 const SizedBox(height: 18),
-                _PlaceholderCard(
-                  icon: Icons.payments_outlined,
-                  title: l.t('feeOverview'),
-                  body: l.t('noFeeOverview'),
-                  action: l.t('viewFees'),
-                ),
+                _BatchFeeSummaryCard(batchId: batch.id),
                 const SizedBox(height: 12),
                 _PlaceholderCard(
                   icon: Icons.menu_book_outlined,
@@ -405,4 +405,92 @@ class _PlaceholderCard extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _BatchFeeSummaryCard extends ConsumerWidget {
+  const _BatchFeeSummaryCard({required this.batchId});
+
+  final String batchId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summary = ref.watch(batchFeeSummaryProvider(batchId));
+    return summary.when(
+      loading: () => const Card(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ),
+      error: (_, _) => Card(
+        child: ListTile(
+          leading: const Icon(Icons.error_outline_rounded),
+          title: Text(context.l10n.t('feeOverview')),
+          subtitle: Text(context.l10n.t('errorMessage')),
+        ),
+      ),
+      data: (aggregate) {
+        return InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => context.push('/fees/overview'),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          context.l10n.t('feeOverview'),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => context.push('/fees/overview'),
+                        child: Text(context.l10n.t('viewFees')),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FeeSummaryCard(
+                          label: context.l10n.t('totalFee'),
+                          value: formatFee(aggregate.totalAssigned),
+                          color: AppColors.primary,
+                          icon: Icons.receipt_long_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FeeSummaryCard(
+                          label: context.l10n.t('collected'),
+                          value: formatFee(aggregate.totalCollected),
+                          color: AppColors.success,
+                          icon: Icons.check_circle_outline_rounded,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FeeSummaryCard(
+                          label: context.l10n.t('due'),
+                          value: formatFee(aggregate.totalDue),
+                          color: AppColors.warning,
+                          icon: Icons.pending_actions_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

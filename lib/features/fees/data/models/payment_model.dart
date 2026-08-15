@@ -1,0 +1,95 @@
+import 'package:hive/hive.dart';
+
+@HiveType(typeId: 6)
+class PaymentModel extends HiveObject {
+  PaymentModel({
+    required this.id,
+    required this.feeRecordId,
+    required this.studentId,
+    required this.batchId,
+    required this.monthKey,
+    required this.amount,
+    required this.paymentDate,
+    required this.paymentMethod,
+    this.note = '',
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  @HiveField(0)
+  String id;
+  @HiveField(1)
+  String feeRecordId;
+  @HiveField(2)
+  String studentId;
+  @HiveField(3)
+  String batchId;
+  @HiveField(4)
+  String monthKey;
+  @HiveField(5)
+  double amount;
+  @HiveField(6)
+  DateTime paymentDate;
+  @HiveField(7)
+  String paymentMethod;
+  @HiveField(8)
+  String note;
+  @HiveField(9)
+  DateTime createdAt;
+  @HiveField(10)
+  DateTime updatedAt;
+}
+
+class PaymentModelAdapter extends TypeAdapter<PaymentModel> {
+  @override
+  final int typeId = 6;
+
+  @override
+  PaymentModel read(BinaryReader reader) {
+    final fields = <int, dynamic>{
+      for (var i = 0; i < reader.readByte(); i++)
+        reader.readByte(): reader.read(),
+    };
+    return PaymentModel(
+      id: fields[0] as String,
+      feeRecordId: fields[1] as String,
+      studentId: fields[2] as String,
+      batchId: fields[3] as String,
+      monthKey: fields[4] as String,
+      amount: (fields[5] as num).toDouble(),
+      paymentDate: fields[6] as DateTime,
+      paymentMethod: fields[7] as String? ?? 'cash',
+      note: fields[8] as String? ?? '',
+      createdAt: fields[9] as DateTime,
+      updatedAt: fields[10] as DateTime,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, PaymentModel obj) {
+    writer
+      ..writeByte(11)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.feeRecordId)
+      ..writeByte(2)
+      ..write(obj.studentId)
+      ..writeByte(3)
+      ..write(obj.batchId)
+      ..writeByte(4)
+      ..write(obj.monthKey)
+      ..writeByte(5)
+      ..write(obj.amount)
+      ..writeByte(6)
+      ..write(obj.paymentDate)
+      ..writeByte(7)
+      ..write(obj.paymentMethod)
+      ..writeByte(8)
+      ..write(obj.note)
+      ..writeByte(9)
+      ..write(obj.createdAt)
+      ..writeByte(10)
+      ..write(obj.updatedAt);
+  }
+}
