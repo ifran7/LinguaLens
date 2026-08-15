@@ -8,6 +8,11 @@ import '../features/dashboard/dashboard_screen.dart';
 import '../features/modules/module_screens.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/batches/domain/entities/batch_entity.dart';
+import '../features/batches/presentation/screens/batches_list_screen.dart';
+import '../features/batches/presentation/screens/batch_form_screen.dart';
+import '../features/batches/presentation/screens/batch_detail_screen.dart';
+import '../features/batches/presentation/screens/enroll_student_screen.dart';
 import '../features/students/presentation/screens/student_detail_screen.dart';
 import '../features/students/presentation/screens/student_form_screen.dart';
 import '../features/students/presentation/screens/students_list_screen.dart';
@@ -46,27 +51,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/batches',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Batches',
-          icon: Icons.groups_rounded,
-          cta: 'Add batch',
-          onPressed: () => ctx.push('/batches/add'),
-        ),
+        builder: (ctx, state) => const BatchesListScreen(),
       ),
       GoRoute(
         path: '/batches/add',
-        builder: (ctx, state) => const AddFormScreen(
-          title: 'Add batch',
-          label: 'Batch name',
-          icon: Icons.group_add_rounded,
+        builder: (ctx, state) => const BatchFormScreen(),
+      ),
+      GoRoute(
+        path: '/batches/edit/:id',
+        builder: (ctx, state) => BatchEditLoader(
+          batchId: state.pathParameters['id']!,
+          batch: state.extra is BatchEntity ? state.extra as BatchEntity : null,
+        ),
+      ),
+      GoRoute(
+        path: '/batches/:id/enroll',
+        builder: (ctx, state) => BatchEnrollLoader(
+          batchId: state.pathParameters['id']!,
+          batch: state.extra is BatchEntity ? state.extra as BatchEntity : null,
         ),
       ),
       GoRoute(
         path: '/batches/:id',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Batch details',
-          icon: Icons.groups_rounded,
-          cta: 'Add batch',
+        builder: (ctx, state) => BatchDetailScreen(
+          batchId: state.pathParameters['id']!,
+          batch: state.extra is BatchEntity ? state.extra as BatchEntity : null,
         ),
       ),
       GoRoute(

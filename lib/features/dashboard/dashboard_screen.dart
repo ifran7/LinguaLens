@@ -6,6 +6,7 @@ import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../students/providers/student_provider.dart';
+import '../batches/providers/batch_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -20,9 +21,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(studentsListProvider.notifier).loadStudents(),
-    );
+    Future.microtask(() async {
+      await ref.read(studentsListProvider.notifier).loadStudents();
+      await ref.read(batchesListProvider.notifier).loadBatches();
+    });
   }
 
   void _selectTab(int index) {
@@ -121,7 +123,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   MetricCard(
                     label: l.t('activeBatches'),
-                    value: '0',
+                    value: ref
+                        .watch(batchesListProvider)
+                        .activeCount
+                        .toString(),
                     icon: Icons.groups_rounded,
                     color: AppColors.secondary,
                     onTap: () => context.push('/batches'),

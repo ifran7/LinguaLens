@@ -6,6 +6,8 @@ import 'app/app.dart';
 import 'core/services/local_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/students/data/models/student_model.dart';
+import 'features/batches/data/models/batch_enrollment_model.dart';
+import 'features/batches/data/models/batch_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +16,15 @@ Future<void> main() async {
   if (!Hive.isAdapterRegistered(1)) {
     Hive.registerAdapter(StudentModelAdapter());
   }
+  if (!Hive.isAdapterRegistered(2)) {
+    Hive.registerAdapter(BatchModelAdapter());
+  }
+  if (!Hive.isAdapterRegistered(3)) {
+    Hive.registerAdapter(BatchEnrollmentModelAdapter());
+  }
   await Hive.openBox<StudentModel>('studentsBox');
+  await Hive.openBox<BatchModel>('batchesBox');
+  await Hive.openBox<BatchEnrollmentModel>('batchEnrollmentsBox');
   await Hive.openBox('metaBox');
   runApp(const ProviderScope(child: LinguaLensApp()));
 }

@@ -3,11 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../../../core/services/future_services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
+import '../../../batches/providers/batch_provider.dart';
 import '../../domain/entities/student_entity.dart';
 import '../../providers/student_provider.dart';
 import '../widgets/student_ui_utils.dart';
@@ -258,17 +261,21 @@ class StudentDetailScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 16),
+              _StudentBatchesSection(studentId: student.id),
+              const SizedBox(height: 16),
               _InfoSection(
-                title: context.l10n.t('batchesEnrolled'),
+                title: context.l10n.t('feeSummary'),
                 children: [
-                  _PlaceholderRow(
-                    icon: Icons.groups_outlined,
-                    label: context.l10n.t('noBatchesYet'),
-                  ),
                   _PlaceholderRow(
                     icon: Icons.account_balance_wallet_outlined,
                     label: context.l10n.t('noFeeRecords'),
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _InfoSection(
+                title: context.l10n.t('attendanceSummary'),
+                children: [
                   _PlaceholderRow(
                     icon: Icons.fact_check_outlined,
                     label: context.l10n.t('noAttendanceRecords'),
@@ -305,6 +312,126 @@ class StudentDetailScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _StudentBatchesSection extends ConsumerWidget {
+  const _StudentBatchesSection({required this.studentId});
+
+  final String studentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncOverviews = ref.watch(studentBatchOverviewsProvider(studentId));
+    return _InfoSection(
+      title: context.l10n.t('batchesEnrolled'),
+      children: asyncOverviews.when(
+        loading: () => const [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        ],
+        error: (_, _) => [
+          _PlaceholderRow(
+            icon: Icons.error_outline_rounded,
+            label: context.l10n.t('errorMessage'),
+          ),
+        ],
+        data: (overviews) {
+          if (overviews.isEmpty) {
+            return [
+              _PlaceholderRow(
+                icon: Icons.groups_outlined,
+                label: context.l10n.t('noBatchesEnrolled'),
+              ),
+            ];
+          }
+          return [
+            for (var index = 0; index < overviews.length; index++) ...[
+              _StudentBatchTile(overview: overviews[index]),
+              if (index < overviews.length - 1) const SizedBox(height: 8),
+            ],
+          ];
+        },
+      ),
+    );
+  }
+}
+
+class _StudentBatchTile extends StatelessWidget {
+  const _StudentBatchTile({required this.overview});
+
+  final StudentBatchOverview overview;
+
+  @override
+  Widget build(BuildContext context) {
+    final batch = overview.batch;
+    final enrollment = overview.enrollment;
+    final effectiveFee = enrollment.effectiveFee(batch.monthlyFeeDefault);
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => context.push('/batches/${batch.id}'),
+      child: Ink(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: batch.color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: batch.color.withValues(alpha: 0.22)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 10,
+              height: 42,
+              decoration: BoxDecoration(
+                color: batch.color,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    batch.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '${batch.subject} • ${DateFormat('dd MMM yyyy').format(enrollment.joiningDate)}',
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: AppColors.muted),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  formatFee(effectiveFee),
+                  style: Theme.of(context).textTheme.labelLarge
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                if (enrollment.customFee > 0)
+                  Text(
+                    context.l10n.t('customFee'),
+                    style: Theme.of(context).textTheme.labelSmall
+                        ?.copyWith(color: batch.color),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right_rounded, size: 20),
+          ],
+        ),
+      ),
     );
   }
 }
