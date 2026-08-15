@@ -73,15 +73,15 @@ class MessageTemplateModelAdapter extends TypeAdapter<MessageTemplateModel> {
         reader.readByte(): reader.read(),
     };
     return MessageTemplateModel(
-      id: fields[0] as String,
-      title: fields[1] as String,
-      bodyEn: fields[2] as String,
-      bodyBn: fields[3] as String,
+      id: fields[0] as String? ?? '',
+      title: fields[1] as String? ?? '',
+      bodyEn: fields[2] as String? ?? '',
+      bodyBn: fields[3] as String? ?? '',
       category: fields[4] as String? ?? 'custom',
       isDefault: fields[5] as bool? ?? false,
       usageCount: fields[6] as int? ?? 0,
-      createdAt: fields[7] as DateTime,
-      updatedAt: fields[8] as DateTime,
+      createdAt: fields[7] as DateTime? ?? DateTime.now(),
+      updatedAt: fields[8] as DateTime? ?? DateTime.now(),
     );
   }
 

@@ -2,241 +2,361 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/constants/route_names.dart';
 import '../core/localization/app_localizations.dart';
 import '../core/theme/app_theme.dart';
-import '../features/dashboard/dashboard_screen.dart';
-import '../features/modules/module_screens.dart' hide BackupRestoreScreen;
-import '../features/onboarding/onboarding_screen.dart';
-import '../features/settings/settings_screen.dart';
-import '../features/messages/presentation/screens/messages_center_screen.dart';
-import '../features/messages/presentation/screens/compose_message_screen.dart';
-import '../features/messages/presentation/screens/message_template_manager_screen.dart';
-import '../features/messages/presentation/screens/message_log_screen.dart';
-import '../features/settings/presentation/screens/settings_center_screen.dart';
-import '../features/settings/presentation/screens/backup_restore_screen.dart';
-import '../features/batches/domain/entities/batch_entity.dart';
-import '../features/batches/presentation/screens/batches_list_screen.dart';
-import '../features/batches/presentation/screens/batch_form_screen.dart';
-import '../features/batches/presentation/screens/batch_detail_screen.dart';
-import '../features/batches/presentation/screens/enroll_student_screen.dart';
-import '../features/students/presentation/screens/student_detail_screen.dart';
-import '../features/students/presentation/screens/student_form_screen.dart';
-import '../features/students/presentation/screens/students_list_screen.dart';
+import '../core/utils/error_handler.dart';
+import '../core/widgets/app_shell.dart';
 import '../features/attendance/presentation/screens/attendance_home_screen.dart';
 import '../features/attendance/presentation/screens/attendance_session_screen.dart';
 import '../features/attendance/presentation/screens/student_attendance_screen.dart';
+import '../features/batches/domain/entities/batch_entity.dart';
+import '../features/batches/presentation/screens/batch_detail_screen.dart';
+import '../features/batches/presentation/screens/batch_form_screen.dart';
+import '../features/batches/presentation/screens/batches_list_screen.dart';
+import '../features/batches/presentation/screens/enroll_student_screen.dart';
+import '../features/dashboard/dashboard_screen.dart';
 import '../features/fees/presentation/screens/collect_payment_screen.dart';
 import '../features/fees/presentation/screens/fee_dashboard_screen.dart';
 import '../features/fees/presentation/screens/fee_generator_screen.dart';
 import '../features/fees/presentation/screens/fee_overview_screen.dart';
 import '../features/fees/presentation/screens/student_fee_history_screen.dart';
-import '../features/lessons/presentation/screens/lesson_planner_screen.dart';
-import '../features/lessons/presentation/screens/lesson_form_screen.dart';
 import '../features/lessons/presentation/screens/lesson_detail_screen.dart';
+import '../features/lessons/presentation/screens/lesson_form_screen.dart';
+import '../features/lessons/presentation/screens/lesson_planner_screen.dart';
 import '../features/lessons/presentation/screens/syllabus_screen.dart';
+import '../features/messages/presentation/screens/compose_message_screen.dart';
+import '../features/messages/presentation/screens/message_log_screen.dart';
+import '../features/messages/presentation/screens/message_template_manager_screen.dart';
+import '../features/messages/presentation/screens/messages_center_screen.dart';
+import '../features/more/more_menu_screen.dart';
+import '../features/onboarding/onboarding_screen.dart';
+import '../features/search/global_search_screen.dart';
+import '../features/settings/presentation/screens/backup_restore_screen.dart';
+import '../features/settings/presentation/screens/settings_center_screen.dart';
+import '../features/settings/settings_screen.dart';
+import '../features/modules/module_screens.dart' show SubscriptionScreen;
+import '../features/students/presentation/screens/student_detail_screen.dart';
+import '../features/students/presentation/screens/student_form_screen.dart';
+import '../features/students/presentation/screens/students_list_screen.dart';
 import 'app_state.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final completed = ref.read(storageProvider).onboardingCompleted;
+  final completed = ref.watch(onboardingControllerProvider);
   return GoRouter(
-    initialLocation: completed ? '/dashboard' : '/onboarding',
+    initialLocation: completed ? RouteNames.dashboard : RouteNames.onboarding,
+    redirect: (context, state) {
+      final isOnboarding = state.matchedLocation == RouteNames.onboarding;
+      if (!completed && !isOnboarding) return RouteNames.onboarding;
+      if (completed && isOnboarding) return RouteNames.dashboard;
+      return null;
+    },
     routes: [
       GoRoute(
-        path: '/onboarding',
-        builder: (ctx, state) => const OnboardingScreen(),
+        path: RouteNames.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
       ),
-      GoRoute(
-        path: '/dashboard',
-        builder: (ctx, state) => const DashboardScreen(),
-      ),
-      GoRoute(
-        path: '/students',
-        builder: (ctx, state) => const StudentsListScreen(),
-      ),
-      GoRoute(
-        path: '/students/add',
-        builder: (ctx, state) => const StudentFormScreen(),
-      ),
-      GoRoute(
-        path: '/students/edit/:id',
-        builder: (ctx, state) =>
-            StudentEditLoader(studentId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/students/:id',
-        builder: (ctx, state) =>
-            StudentDetailScreen(studentId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/batches',
-        builder: (ctx, state) => const BatchesListScreen(),
-      ),
-      GoRoute(
-        path: '/batches/add',
-        builder: (ctx, state) => const BatchFormScreen(),
-      ),
-      GoRoute(
-        path: '/batches/edit/:id',
-        builder: (ctx, state) => BatchEditLoader(
-          batchId: state.pathParameters['id']!,
-          batch: state.extra is BatchEntity ? state.extra as BatchEntity : null,
-        ),
-      ),
-      GoRoute(
-        path: '/batches/:id/enroll',
-        builder: (ctx, state) => BatchEnrollLoader(
-          batchId: state.pathParameters['id']!,
-          batch: state.extra is BatchEntity ? state.extra as BatchEntity : null,
-        ),
-      ),
-      GoRoute(
-        path: '/batches/:id',
-        builder: (ctx, state) => BatchDetailScreen(
-          batchId: state.pathParameters['id']!,
-          batch: state.extra is BatchEntity ? state.extra as BatchEntity : null,
-        ),
-      ),
-      GoRoute(
-        path: '/attendance',
-        builder: (ctx, state) => const AttendanceHomeScreen(),
-      ),
-      GoRoute(
-        path: '/attendance/batch/:batchId',
-        builder: (ctx, state) => AttendanceSessionScreen(
-          batchId: state.pathParameters['batchId']!,
-          initialDate: state.extra is DateTime ? state.extra as DateTime : null,
-        ),
-      ),
-      GoRoute(
-        path: '/students/:id/attendance',
-        builder: (ctx, state) => StudentAttendanceScreen(
-          studentId: state.pathParameters['id']!,
-          batchId: state.uri.queryParameters['batchId'],
-        ),
-      ),
-      GoRoute(
-        path: '/attendance/student/:id/calendar',
-        builder: (ctx, state) => StudentAttendanceScreen(
-          studentId: state.pathParameters['id']!,
-          batchId: state.uri.queryParameters['batchId'],
-        ),
-      ),
-      GoRoute(
-        path: '/fees',
-        builder: (ctx, state) => const FeeDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/fees/overview',
-        builder: (ctx, state) => FeeOverviewScreen(
-          initialMonthKey: state.uri.queryParameters['monthKey'],
-          showOverdue: state.uri.queryParameters['overdue'] == 'true',
-        ),
-      ),
-      GoRoute(
-        path: '/fees/generate',
-        builder: (ctx, state) => FeeGeneratorScreen(
-          initialMonthKey: state.uri.queryParameters['monthKey'],
-        ),
-      ),
-      GoRoute(
-        path: '/fees/collect',
-        builder: (ctx, state) => CollectPaymentScreen(
-          studentId: state.uri.queryParameters['studentId'] ?? '',
-          batchId: state.uri.queryParameters['batchId'] ?? '',
-          monthKey: state.uri.queryParameters['monthKey'] ?? '',
-          feeRecordId: state.uri.queryParameters['feeRecordId'],
-        ),
-      ),
-      GoRoute(
-        path: '/fees/student/:studentId',
-        builder: (ctx, state) => StudentFeeHistoryScreen(
-          studentId: state.pathParameters['studentId']!,
-        ),
-      ),
-      GoRoute(
-        path: '/lessons',
-        builder: (ctx, state) => const LessonPlannerScreen(),
-      ),
-      GoRoute(
-        path: '/lessons/new',
-        builder: (ctx, state) => LessonFormScreen(
-          initialBatchId: state.uri.queryParameters['batchId'],
-          initialDate: state.uri.queryParameters['date'] == null
-              ? null
-              : DateTime.tryParse(state.uri.queryParameters['date']!),
-        ),
-      ),
-      GoRoute(
-        path: '/lessons/edit/:id',
-        builder: (ctx, state) =>
-            LessonFormScreen(lessonId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/lessons/:id',
-        builder: (ctx, state) =>
-            LessonDetailScreen(lessonId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/batches/:id/syllabus',
-        builder: (ctx, state) =>
-            SyllabusScreen(batchId: state.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/messages',
-        builder: (ctx, state) => const MessagesCenterScreen(),
-      ),
-      GoRoute(
-        path: '/messages/compose',
-        builder: (ctx, state) => ComposeMessageScreen(
-          studentId: state.uri.queryParameters['studentId'],
-          batchId: state.uri.queryParameters['batchId'],
-        ),
-      ),
-      GoRoute(
-        path: '/messages/templates',
-        builder: (ctx, state) => const MessageTemplateManagerScreen(),
-      ),
-      GoRoute(
-        path: '/messages/logs',
-        builder: (ctx, state) =>
-            MessageLogScreen(studentId: state.uri.queryParameters['studentId']),
-      ),
-      GoRoute(
-        path: '/settings',
-        builder: (ctx, state) => const SettingsCenterScreen(),
-      ),
-      GoRoute(
-        path: '/settings/language',
-        builder: (ctx, state) => const LanguageScreen(),
-      ),
-      GoRoute(
-        path: '/settings/theme',
-        builder: (ctx, state) => const ThemeScreen(),
-      ),
-      GoRoute(
-        path: '/settings/backup',
-        builder: (ctx, state) => const BackupRestoreScreen(),
-      ),
-      GoRoute(
-        path: '/settings/subscription',
-        builder: (ctx, state) => const SubscriptionScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            AppShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.dashboard,
+                builder: (context, state) => const DashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.students,
+                builder: (context, state) => const StudentsListScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'add',
+                    builder: (context, state) => const StudentFormScreen(),
+                  ),
+                  GoRoute(
+                    path: 'edit/:id',
+                    builder: (context, state) => StudentEditLoader(
+                      studentId: state.pathParameters['id']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => StudentDetailScreen(
+                      studentId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.attendance,
+                builder: (context, state) => const AttendanceHomeScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'batch/:batchId',
+                    builder: (context, state) => AttendanceSessionScreen(
+                      batchId: state.pathParameters['batchId']!,
+                      initialDate: state.extra is DateTime
+                          ? state.extra as DateTime
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: '/students/:id/attendance',
+                builder: (context, state) => StudentAttendanceScreen(
+                  studentId: state.pathParameters['id']!,
+                  batchId: state.uri.queryParameters['batchId'],
+                ),
+              ),
+              GoRoute(
+                path: RouteNames.attendanceCalendar,
+                builder: (context, state) => StudentAttendanceScreen(
+                  studentId: state.pathParameters['id']!,
+                  batchId: state.uri.queryParameters['batchId'],
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.fees,
+                builder: (context, state) => const FeeDashboardScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'overview',
+                    builder: (context, state) => FeeOverviewScreen(
+                      initialMonthKey: state.uri.queryParameters['monthKey'],
+                      showOverdue:
+                          state.uri.queryParameters['overdue'] == 'true',
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'generate',
+                    builder: (context, state) => FeeGeneratorScreen(
+                      initialMonthKey: state.uri.queryParameters['monthKey'],
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'collect',
+                    builder: (context, state) => CollectPaymentScreen(
+                      studentId: state.uri.queryParameters['studentId'] ?? '',
+                      batchId: state.uri.queryParameters['batchId'] ?? '',
+                      monthKey: state.uri.queryParameters['monthKey'] ?? '',
+                      feeRecordId: state.uri.queryParameters['feeRecordId'],
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'student/:studentId',
+                    builder: (context, state) => StudentFeeHistoryScreen(
+                      studentId: state.pathParameters['studentId']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/more',
+                builder: (context, state) => const MoreMenuScreen(),
+              ),
+              GoRoute(
+                path: RouteNames.batches,
+                builder: (context, state) => const BatchesListScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'add',
+                    builder: (context, state) => const BatchFormScreen(),
+                  ),
+                  GoRoute(
+                    path: 'edit/:id',
+                    builder: (context, state) => BatchEditLoader(
+                      batchId: state.pathParameters['id']!,
+                      batch: state.extra is BatchEntity
+                          ? state.extra as BatchEntity
+                          : null,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':id/enroll',
+                    builder: (context, state) => BatchEnrollLoader(
+                      batchId: state.pathParameters['id']!,
+                      batch: state.extra is BatchEntity
+                          ? state.extra as BatchEntity
+                          : null,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => BatchDetailScreen(
+                      batchId: state.pathParameters['id']!,
+                      batch: state.extra is BatchEntity
+                          ? state.extra as BatchEntity
+                          : null,
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':id/syllabus',
+                    builder: (context, state) =>
+                        SyllabusScreen(batchId: state.pathParameters['id']!),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: RouteNames.lessons,
+                builder: (context, state) => const LessonPlannerScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) => LessonFormScreen(
+                      initialBatchId: state.uri.queryParameters['batchId'],
+                      initialDate: state.uri.queryParameters['date'] == null
+                          ? null
+                          : DateTime.tryParse(
+                              state.uri.queryParameters['date']!,
+                            ),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'edit/:id',
+                    builder: (context, state) =>
+                        LessonFormScreen(lessonId: state.pathParameters['id']!),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => LessonDetailScreen(
+                      lessonId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: RouteNames.messages,
+                builder: (context, state) => const MessagesCenterScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'compose',
+                    builder: (context, state) => ComposeMessageScreen(
+                      studentId: state.uri.queryParameters['studentId'],
+                      batchId: state.uri.queryParameters['batchId'],
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'templates',
+                    builder: (context, state) =>
+                        const MessageTemplateManagerScreen(),
+                  ),
+                  GoRoute(
+                    path: 'logs',
+                    builder: (context, state) => MessageLogScreen(
+                      studentId: state.uri.queryParameters['studentId'],
+                    ),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: RouteNames.settings,
+                builder: (context, state) => const SettingsCenterScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'language',
+                    builder: (context, state) => const LanguageScreen(),
+                  ),
+                  GoRoute(
+                    path: 'theme',
+                    builder: (context, state) => const ThemeScreen(),
+                  ),
+                  GoRoute(
+                    path: 'backup',
+                    builder: (context, state) => const BackupRestoreScreen(),
+                  ),
+                  GoRoute(
+                    path: 'subscription',
+                    builder: (context, state) => const SubscriptionScreen(),
+                  ),
+                ],
+              ),
+              GoRoute(
+                path: RouteNames.search,
+                builder: (context, state) => const GlobalSearchScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
 });
 
 class LinguaLensApp extends ConsumerWidget {
-  const LinguaLensApp({super.key});
+  const LinguaLensApp({super.key, this.startupError});
+
+  final Object? startupError;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (startupError != null) {
+      return MaterialApp(
+        title: 'LinguaLens',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light(fontFamily: 'Poppins'),
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.cloud_off, size: 56),
+                    const SizedBox(height: 20),
+                    Text(
+                      'LinguaLens could not start',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      AppErrorHandler.getReadableError(startupError!),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Please restart LinguaLens and try again.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final themeMode = ref.watch(themeControllerProvider);
     final locale = ref.watch(localeControllerProvider);
+    final fontFamily = locale.languageCode == 'bn'
+        ? 'NotoSansBengali'
+        : 'Poppins';
     return MaterialApp.router(
       title: 'LinguaLens',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light(fontFamily: fontFamily),
+      darkTheme: AppTheme.dark(fontFamily: fontFamily),
       themeMode: themeMode,
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,

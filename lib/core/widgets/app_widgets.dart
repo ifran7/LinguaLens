@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../localization/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class AppPage extends StatelessWidget {
@@ -161,6 +162,113 @@ class EmptyState extends StatelessWidget {
       ),
     );
   }
+}
+
+class AppLoading extends StatelessWidget {
+  const AppLoading({super.key, this.label});
+
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+            if (label != null) ...[
+              const SizedBox(height: 16),
+              Text(label!, style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AppErrorState extends StatelessWidget {
+  const AppErrorState({super.key, this.title, this.message, this.onRetry});
+
+  final String? title;
+  final String? message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppColors.danger,
+            ),
+            const SizedBox(height: 16),
+            Text(title ?? l.t('errorMessage'), textAlign: TextAlign.center),
+            if (message != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                message!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: AppColors.muted),
+              ),
+            ],
+            if (onRetry != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh_rounded),
+                label: Text(l.t('retry')),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<bool> showAppConfirmDialog({
+  required BuildContext context,
+  required String title,
+  required String body,
+  String? confirmLabel,
+  bool destructive = false,
+}) async {
+  final l = context.l10n;
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l.t('cancel')),
+        ),
+        FilledButton(
+          style: destructive
+              ? FilledButton.styleFrom(backgroundColor: AppColors.danger)
+              : null,
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(confirmLabel ?? l.t('confirm')),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
 }
 
 class SettingsTile extends StatelessWidget {

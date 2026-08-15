@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+import '../localization/app_localizations.dart';
+
 DateTime normalizeDate(DateTime date) =>
     DateTime(date.year, date.month, date.day);
 
@@ -59,3 +61,21 @@ String formatWeekRange(DateTime date) {
 
 String formatFullDate(DateTime date) =>
     DateFormat('EEEE, d MMMM yyyy').format(normalizeDate(date));
+
+String formatRelativeTime(DateTime date, AppLocalizations l, {DateTime? now}) {
+  final current = now ?? DateTime.now();
+  final difference = current.difference(date);
+  if (difference.isNegative) return l.t('justNow');
+  if (difference.inMinutes < 1) return l.t('justNow');
+  if (difference.inMinutes < 60) {
+    return '${difference.inMinutes} ${l.t('minutesAgo')}';
+  }
+  if (difference.inHours < 24) {
+    return '${difference.inHours} ${l.t('hoursAgo')}';
+  }
+  if (difference.inDays == 1) return l.t('yesterday');
+  if (difference.inDays < 7) {
+    return '${difference.inDays} ${l.t('daysAgo')}';
+  }
+  return formatDayMonthYear(date);
+}

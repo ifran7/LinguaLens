@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/app_state.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_widgets.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../core/utils/currency_utils.dart';
 import '../../core/utils/date_utils.dart';
 import '../attendance/providers/attendance_provider.dart';
@@ -23,7 +25,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  int _selectedIndex = 0;
+  bool _backupReminderDismissed = false;
 
   @override
   void initState() {
@@ -35,23 +37,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     });
   }
 
-  void _selectTab(int index) {
-    setState(() => _selectedIndex = index);
-    switch (index) {
-      case 1:
-        context.push('/students');
-      case 2:
-        context.push('/attendance');
-      case 3:
-        context.push('/settings');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
     final feeDashboard = ref.watch(feeDashboardProvider);
     final settings = ref.watch(settingsProvider);
+    final storage = ref.read(storageProvider);
+    final lastBackup = storage.lastBackupTime;
+    final backupDue =
+        storage.remindToBackup &&
+        !_backupReminderDismissed &&
+        (lastBackup == null ||
+            DateTime.now().difference(lastBackup).inDays >= 30);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -88,6 +85,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         actions: [
           IconButton(
+            tooltip: l.t('search'),
+            onPressed: () => context.push('/search'),
+            icon: const Icon(Icons.search_rounded),
+          ),
+          IconButton(
+            tooltip: backupDue
+                ? l.t('backupReminderMessage')
+                : l.t('backupRestore'),
+            onPressed: () => context.push('/settings/backup'),
+            icon: Badge(
+              isLabelVisible: backupDue,
+              backgroundColor: AppColors.warning,
+              child: const Icon(Icons.backup_outlined),
+            ),
+          ),
+          IconButton(
+            tooltip: l.t('settings'),
             onPressed: () => context.push('/settings'),
             icon: const Icon(Icons.tune_rounded),
           ),
@@ -100,85 +114,141 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                l.t('welcome'),
-                style: Theme.of(context).textTheme.headlineSmall,
+              _GreetingCard(
+                teacherName: settings.teacherName,
+                activeStudents: ref.watch(studentsListProvider).activeCount,
               ),
-              const SizedBox(height: 6),
-              Text(
-                l.t('manageTeaching'),
-                style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: AppColors.muted),
-              ),
-              const SizedBox(height: 24),
+              if (backupDue) ...[
+                const SizedBox(height: 16),
+                _BackupReminderBanner(
+                  onBackup: () => context.push('/settings/backup'),
+                  onDismiss: () =>
+                      setState(() => _backupReminderDismissed = true),
+                ),
+              ],
+              const SizedBox(height: 20),
               _FocusBanner(onTap: () => context.push('/attendance')),
               const SizedBox(height: 28),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.12,
-                children: [
-                  MetricCard(
-                    label: l.t('totalStudents'),
-                    value: ref
-                        .watch(studentsListProvider)
-                        .activeCount
-                        .toString(),
-                    icon: Icons.people_alt_rounded,
-                    color: AppColors.primary,
-                    onTap: () => context.push('/students'),
-                  ),
-                  MetricCard(
-                    label: l.t('activeBatches'),
-                    value: ref
-                        .watch(batchesListProvider)
-                        .activeCount
-                        .toString(),
-                    icon: Icons.groups_rounded,
-                    color: AppColors.secondary,
-                    onTap: () => context.push('/batches'),
-                  ),
-                  if (settings.showFeesOnDashboard)
-                    MetricCard(
-                      label: l.t('pendingFees'),
-                      value:
-                          feeDashboard.isLoading &&
-                              feeDashboard.aggregate == null
-                          ? '…'
-                          : formatFee(feeDashboard.aggregate?.totalDue ?? 0),
-                      icon: Icons.account_balance_wallet_rounded,
-                      color: AppColors.warning,
-                      onTap: () => context.push('/fees'),
+              SizedBox(
+                height: 132,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    SizedBox(
+                      width: 148,
+                      child: MetricCard(
+                        label: l.t('totalStudents'),
+                        value: ref
+                            .watch(studentsListProvider)
+                            .activeCount
+                            .toString(),
+                        icon: Icons.people_alt_rounded,
+                        color: AppColors.primary,
+                        onTap: () => context.push('/students'),
+                      ),
                     ),
-                  if (settings.showAttendanceOnDashboard)
-                    MetricCard(
-                      label: l.t('attendanceToday'),
-                      value: ref
-                          .watch(
-                            attendanceDailySummaryProvider(
-                              normalizeDate(DateTime.now()),
-                            ),
-                          )
-                          .when(
-                            data: (summary) =>
-                                '${summary.presentCount}/${summary.expectedStudentCount}',
-                            loading: () => '…',
-                            error: (_, _) => '—',
-                          ),
-                      icon: Icons.fact_check_rounded,
-                      color: AppColors.success,
-                      onTap: () => context.push('/attendance'),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 148,
+                      child: MetricCard(
+                        label: l.t('activeBatches'),
+                        value: ref
+                            .watch(batchesListProvider)
+                            .activeCount
+                            .toString(),
+                        icon: Icons.groups_rounded,
+                        color: AppColors.secondary,
+                        onTap: () => context.push('/batches'),
+                      ),
                     ),
-                ],
+                    if (settings.showFeesOnDashboard) ...[
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 148,
+                        child: MetricCard(
+                          label: l.t('pendingFees'),
+                          value:
+                              feeDashboard.isLoading &&
+                                  feeDashboard.aggregate == null
+                              ? '…'
+                              : formatFee(
+                                  feeDashboard.aggregate?.totalDue ?? 0,
+                                ),
+                          icon: Icons.account_balance_wallet_rounded,
+                          color: AppColors.warning,
+                          onTap: () => context.push('/fees'),
+                        ),
+                      ),
+                    ],
+                    if (settings.showAttendanceOnDashboard) ...[
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 148,
+                        child: MetricCard(
+                          label: l.t('attendanceToday'),
+                          value: ref
+                              .watch(
+                                attendanceDailySummaryProvider(
+                                  normalizeDate(DateTime.now()),
+                                ),
+                              )
+                              .when(
+                                data: (summary) =>
+                                    '${summary.presentCount}/${summary.expectedStudentCount}',
+                                loading: () => '…',
+                                error: (_, _) => '—',
+                              ),
+                          icon: Icons.fact_check_rounded,
+                          color: AppColors.success,
+                          onTap: () => context.push('/attendance'),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
               const SizedBox(height: 30),
               SectionHeader(title: l.t('quickActions')),
               const SizedBox(height: 14),
               _QuickActions(),
               const SizedBox(height: 30),
+              if (settings.showLessonsOnDashboard) ...[
+                SectionHeader(
+                  title: l.t('todaysSchedule'),
+                  actionLabel: l.t('viewAll'),
+                  onAction: () => context.push('/lessons'),
+                ),
+                const SizedBox(height: 12),
+                ref
+                    .watch(todayLessonsProvider)
+                    .when(
+                      loading: () => const AppLoading(),
+                      error: (_, _) =>
+                          AppCard(child: Text(l.t('noLessonsToday'))),
+                      data: (items) => items.isEmpty
+                          ? AppEmptyState(
+                              compact: true,
+                              icon: Icons.menu_book_outlined,
+                              title: l.t('noLessonsToday'),
+                              actionLabel: l.t('addLesson'),
+                              onAction: () => context.push('/lessons/add'),
+                            )
+                          : Column(
+                              children: items
+                                  .take(3)
+                                  .map(
+                                    (item) => LessonCard(
+                                      item: item,
+                                      onTap: () => context.push(
+                                        '/lessons/${item.lesson.id}',
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                    ),
+                const SizedBox(height: 30),
+              ],
               if (settings.showUpcomingLessons) ...[
                 SectionHeader(
                   title: l.t('upcomingLessons'),
@@ -249,30 +319,101 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _selectTab,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.grid_view_rounded),
-            selectedIcon: const Icon(Icons.grid_view_rounded),
-            label: l.t('dashboard'),
+    );
+  }
+}
+
+class _GreetingCard extends StatelessWidget {
+  const _GreetingCard({
+    required this.teacherName,
+    required this.activeStudents,
+  });
+
+  final String teacherName;
+  final int activeStudents;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final hour = DateTime.now().hour;
+    final greeting = hour < 12
+        ? l.t('goodMorning')
+        : hour < 17
+        ? l.t('goodAfternoon')
+        : l.t('goodEvening');
+    final name = teacherName.trim().isEmpty
+        ? l.t('teacher')
+        : teacherName.trim();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withValues(alpha: 0.78),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.18),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.people_outline_rounded),
-            selectedIcon: const Icon(Icons.people_rounded),
-            label: l.t('students'),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$greeting, $name',
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.fact_check_outlined),
-            selectedIcon: const Icon(Icons.fact_check_rounded),
-            label: l.t('attendance'),
+          const SizedBox(height: 8),
+          Text(
+            '${formatShortWeekdayDate(DateTime.now())}  •  $activeStudents ${l.t('studentsActive')}',
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: Colors.white.withValues(alpha: 0.84)),
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.tune_outlined),
-            selectedIcon: const Icon(Icons.tune_rounded),
-            label: l.t('settings'),
+        ],
+      ),
+    );
+  }
+}
+
+class _BackupReminderBanner extends StatelessWidget {
+  const _BackupReminderBanner({
+    required this.onBackup,
+    required this.onDismiss,
+  });
+
+  final VoidCallback onBackup;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AppCard(
+      color: AppColors.warning.withValues(alpha: 0.16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+      child: Row(
+        children: [
+          const Icon(Icons.backup_outlined, color: AppColors.warning),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              l.t('backupReminderMessage'),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ),
+          IconButton(
+            tooltip: l.t('dismiss'),
+            onPressed: onDismiss,
+            icon: const Icon(Icons.close_rounded),
+          ),
+          TextButton(onPressed: onBackup, child: Text(l.t('createBackupNow'))),
         ],
       ),
     );

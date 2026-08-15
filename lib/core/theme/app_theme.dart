@@ -15,23 +15,38 @@ class AppColors {
 }
 
 class AppTheme {
-  static ThemeData light() {
+  static ThemeData light({String fontFamily = 'Poppins'}) {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.light,
     );
-    return _base(scheme, AppColors.lightCanvas, AppColors.lightSurface);
+    return _base(
+      scheme,
+      AppColors.lightCanvas,
+      AppColors.lightSurface,
+      fontFamily,
+    );
   }
 
-  static ThemeData dark() {
+  static ThemeData dark({String fontFamily = 'Poppins'}) {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
     );
-    return _base(scheme, AppColors.darkCanvas, AppColors.darkSurface);
+    return _base(
+      scheme,
+      AppColors.darkCanvas,
+      AppColors.darkSurface,
+      fontFamily,
+    );
   }
 
-  static ThemeData _base(ColorScheme scheme, Color canvas, Color surface) {
+  static ThemeData _base(
+    ColorScheme scheme,
+    Color canvas,
+    Color surface,
+    String fontFamily,
+  ) {
     final textTheme = const TextTheme(
       displaySmall: TextStyle(
         fontSize: 32,
@@ -55,8 +70,8 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: canvas,
-      textTheme: textTheme,
-      fontFamily: 'Roboto',
+      textTheme: textTheme.apply(fontFamily: fontFamily),
+      fontFamily: fontFamily,
       appBarTheme: AppBarTheme(
         backgroundColor: canvas,
         foregroundColor: scheme.onSurface,
@@ -102,6 +117,30 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,

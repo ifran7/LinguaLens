@@ -1,109 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import 'app/app.dart';
-import 'core/services/local_storage_service.dart';
-import 'core/theme/app_theme.dart';
-import 'features/students/data/models/student_model.dart';
-import 'features/batches/data/models/batch_enrollment_model.dart';
-import 'features/batches/data/models/batch_model.dart';
-import 'features/attendance/data/models/attendance_model.dart';
-import 'features/fees/data/models/fee_record_model.dart';
-import 'features/fees/data/models/payment_model.dart';
-import 'features/lessons/data/models/lesson_plan_model.dart';
-import 'features/lessons/data/models/syllabus_topic_model.dart';
-import 'features/messages/data/models/message_log_model.dart';
-import 'features/messages/data/models/message_template_model.dart';
-import 'features/messages/services/template_seeder.dart';
+import 'app/app_initializer.dart';
+import 'core/utils/error_handler.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await LocalStorageService.instance.init();
-  await Hive.initFlutter();
-  if (!Hive.isAdapterRegistered(1)) {
-    Hive.registerAdapter(StudentModelAdapter());
+  FlutterError.onError = (details) {
+    AppErrorHandler.handleError(details.exception, details.stack);
+  };
+  Object? startupError;
+  try {
+    await AppInitializer.initializeApp();
+  } catch (error, stack) {
+    startupError = error;
+    AppErrorHandler.handleError(error, stack);
   }
-  if (!Hive.isAdapterRegistered(2)) {
-    Hive.registerAdapter(BatchModelAdapter());
-  }
-  if (!Hive.isAdapterRegistered(3)) {
-    Hive.registerAdapter(BatchEnrollmentModelAdapter());
-  }
-  if (!Hive.isAdapterRegistered(4)) {
-    Hive.registerAdapter(AttendanceModelAdapter());
-  }
-  if (!Hive.isAdapterRegistered(5)) {
-    Hive.registerAdapter(FeeRecordModelAdapter());
-  }
-  if (!Hive.isAdapterRegistered(6)) {
-    Hive.registerAdapter(PaymentModelAdapter());
-  }
-  if (!Hive.isAdapterRegistered(7)) {
-    Hive.registerAdapter(LessonPlanModelAdapter());
-  }
-  if (!Hive.isAdapterRegistered(8)) {
-    Hive.registerAdapter(SyllabusTopicModelAdapter());
-  }
-  if (!Hive.isAdapterRegistered(9)) {
-    Hive.registerAdapter(MessageTemplateModelAdapter());
-  }
-  if (!Hive.isAdapterRegistered(10)) {
-    Hive.registerAdapter(MessageLogModelAdapter());
-  }
-  await Hive.openBox<StudentModel>('studentsBox');
-  await Hive.openBox<BatchModel>('batchesBox');
-  await Hive.openBox<BatchEnrollmentModel>('batchEnrollmentsBox');
-  await Hive.openBox<AttendanceModel>('attendanceBox');
-  await Hive.openBox<FeeRecordModel>('feeRecordsBox');
-  await Hive.openBox<PaymentModel>('paymentsBox');
-  await Hive.openBox<LessonPlanModel>('lessonsBox');
-  await Hive.openBox<SyllabusTopicModel>('syllabusTopicsBox');
-  await Hive.openBox<MessageTemplateModel>('messageTemplatesBox');
-  await Hive.openBox<MessageLogModel>('messageLogsBox');
-  await Hive.openBox('metaBox');
-  await TemplateSeeder.seedIfNeeded();
-  runApp(const ProviderScope(child: LinguaLensApp()));
-}
-
-class StartupScreen extends StatelessWidget {
-  const StartupScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.lightCanvas,
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: const Icon(
-                Icons.auto_awesome_rounded,
-                color: Colors.white,
-                size: 36,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'LinguaLens',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 18),
-            const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  runApp(ProviderScope(child: LinguaLensApp(startupError: startupError)));
 }

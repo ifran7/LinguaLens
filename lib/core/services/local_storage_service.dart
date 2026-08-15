@@ -28,6 +28,11 @@ class LocalStorageService {
     return value == null ? null : DateTime.tryParse(value);
   }
 
+  bool get remindToBackup => _preferences.getBool('remind_to_backup') ?? true;
+
+  Future<void> setRemindToBackup(bool value) =>
+      _preferences.setBool('remind_to_backup', value);
+
   String get teacherName => _preferences.getString('teacher_name') ?? '';
   String get teacherPhone => _preferences.getString('teacher_phone') ?? '';
   String get teacherPhotoPath =>
@@ -118,6 +123,18 @@ class LocalStorageService {
     }
     if (settings['autoBackupEnabled'] is bool) {
       await setAutoBackup(settings['autoBackupEnabled'] as bool);
+    }
+    if (settings['remindToBackup'] is bool) {
+      await setRemindToBackup(settings['remindToBackup'] as bool);
+    }
+    if (settings['lastBackupTime'] is String) {
+      final value = DateTime.tryParse(settings['lastBackupTime'] as String);
+      if (value != null) {
+        await _preferences.setString(
+          'last_backup_time',
+          value.toIso8601String(),
+        );
+      }
     }
     if (settings['backupIntervalDays'] is num) {
       await setBackupIntervalDays(
