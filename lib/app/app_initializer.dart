@@ -113,6 +113,7 @@ class AppInitializer {
       () => _open<AppSettingsModel>(HiveBoxes.settings, recover: true),
     );
     await _runStep('metadata box', () => _open<dynamic>(HiveBoxes.meta));
+    await _runStep('metadata validation', _validateMetadataBoxes);
   }
 
   static Future<void> _open<T>(String name, {bool recover = false}) async {
@@ -127,6 +128,31 @@ class AppInitializer {
       await Hive.deleteBoxFromDisk(name);
       await Hive.openBox<T>(name);
     }
+  }
+
+  static Future<void> _validateMetadataBoxes() async {
+    final settings = Hive.box<AppSettingsModel>(HiveBoxes.settings);
+    final backupMeta = Hive.box<BackupMetaModel>(HiveBoxes.backupMeta);
+
+    try {
+      settings.values.toList(growable: false);
+    } catch (_) {
+      await _resetBox<AppSettingsModel>(HiveBoxes.settings);
+    }
+
+    try {
+      backupMeta.values.toList(growable: false);
+    } catch (_) {
+      await _resetBox<BackupMetaModel>(HiveBoxes.backupMeta);
+    }
+  }
+
+  static Future<void> _resetBox<T>(String name) async {
+    if (Hive.isBoxOpen(name)) {
+      await Hive.box<T>(name).close();
+    }
+    await Hive.deleteBoxFromDisk(name);
+    await Hive.openBox<T>(name);
   }
 
   static Future<void> _initializeSettings() async {

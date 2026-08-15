@@ -51,12 +51,19 @@ class BackupMetaModelAdapter extends TypeAdapter<BackupMetaModel> {
       for (var i = 0; i < reader.readByte(); i++)
         reader.readByte(): reader.read(),
     };
+    final id = fields[0] is String ? fields[0] as String : 'latest';
+    final createdAt = fields[1] is DateTime
+        ? fields[1] as DateTime
+        : DateTime.now();
+    final fileName = fields[2] is String ? fields[2] as String : '';
+    final recordCount = fields[3] is num ? (fields[3] as num).toInt() : 0;
+    final schemaVersion = fields[4] is num ? (fields[4] as num).toInt() : 2;
     return BackupMetaModel(
-      id: fields[0] as String? ?? 'latest',
-      createdAt: fields[1] as DateTime? ?? DateTime.now(),
-      fileName: fields[2] as String? ?? '',
-      recordCount: fields[3] as int? ?? 0,
-      schemaVersion: fields[4] as int? ?? 2,
+      id: id,
+      createdAt: createdAt,
+      fileName: fileName,
+      recordCount: recordCount,
+      schemaVersion: schemaVersion,
     );
   }
 

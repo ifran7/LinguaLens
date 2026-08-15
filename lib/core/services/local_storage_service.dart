@@ -17,40 +17,48 @@ class LocalStorageService {
     _initialized = true;
   }
 
-  bool get onboardingCompleted =>
-      _preferences.getBool('is_onboarding_completed') ?? false;
-  String get languageCode =>
-      _preferences.getString('selected_language_code') ?? 'en';
-  String get themeMode =>
-      _preferences.getString('selected_theme_mode') ?? 'light';
-  DateTime? get lastBackupTime {
-    final value = _preferences.getString('last_backup_time');
-    return value == null ? null : DateTime.tryParse(value);
+  dynamic _value(String key) => _preferences.get(key);
+
+  String _stringValue(String key, String fallback) {
+    final value = _value(key);
+    return value is String ? value : fallback;
   }
 
-  bool get remindToBackup => _preferences.getBool('remind_to_backup') ?? true;
+  bool _boolValue(String key, bool fallback) {
+    final value = _value(key);
+    return value is bool ? value : fallback;
+  }
+
+  int _intValue(String key, int fallback) {
+    final value = _value(key);
+    return value is int ? value : fallback;
+  }
+
+  bool get onboardingCompleted => _boolValue('is_onboarding_completed', false);
+  String get languageCode => _stringValue('selected_language_code', 'en');
+  String get themeMode => _stringValue('selected_theme_mode', 'light');
+  DateTime? get lastBackupTime {
+    final value = _stringValue('last_backup_time', '');
+    return value.isEmpty ? null : DateTime.tryParse(value);
+  }
+
+  bool get remindToBackup => _boolValue('remind_to_backup', true);
 
   Future<void> setRemindToBackup(bool value) =>
       _preferences.setBool('remind_to_backup', value);
 
-  String get teacherName => _preferences.getString('teacher_name') ?? '';
-  String get teacherPhone => _preferences.getString('teacher_phone') ?? '';
-  String get teacherPhotoPath =>
-      _preferences.getString('teacher_photo_path') ?? '';
-  bool get autoBackupEnabled =>
-      _preferences.getBool('auto_backup_enabled') ?? false;
-  int get backupIntervalDays =>
-      _preferences.getInt('backup_interval_days') ?? 7;
-  bool get showFeesOnDashboard =>
-      _preferences.getBool('show_fees_dashboard') ?? true;
+  String get teacherName => _stringValue('teacher_name', '');
+  String get teacherPhone => _stringValue('teacher_phone', '');
+  String get teacherPhotoPath => _stringValue('teacher_photo_path', '');
+  bool get autoBackupEnabled => _boolValue('auto_backup_enabled', false);
+  int get backupIntervalDays => _intValue('backup_interval_days', 7);
+  bool get showFeesOnDashboard => _boolValue('show_fees_dashboard', true);
   bool get showAttendanceOnDashboard =>
-      _preferences.getBool('show_attendance_dashboard') ?? true;
-  bool get showLessonsOnDashboard =>
-      _preferences.getBool('show_lessons_dashboard') ?? true;
-  bool get showUpcomingLessons =>
-      _preferences.getBool('show_upcoming_lessons') ?? true;
+      _boolValue('show_attendance_dashboard', true);
+  bool get showLessonsOnDashboard => _boolValue('show_lessons_dashboard', true);
+  bool get showUpcomingLessons => _boolValue('show_upcoming_lessons', true);
   String get defaultMessageLanguage =>
-      _preferences.getString('default_message_language') ?? 'en';
+      _stringValue('default_message_language', 'en');
 
   Future<void> setTeacherProfile({
     String? name,

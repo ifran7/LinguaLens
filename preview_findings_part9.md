@@ -13,3 +13,7 @@ The final release attendance route rendered successfully with the premium header
 ## Fees Route
 
 The final release fee dashboard rendered successfully with four colored finance summary cards showing the separated Taka symbol and numeric amounts, month navigation, quick actions, recent-payment empty state, overdue empty state, and the persistent shell with Fees selected.
+
+## Android Startup Fix Verification
+
+A cache-busted release preview built from the startup-hardening changes loaded the normal LinguaLens dashboard successfully instead of the generic startup failure screen. The persistent five-tab shell, greeting, backup reminder, summary cards, quick actions, and today’s schedule empty state all rendered without a startup exception.
