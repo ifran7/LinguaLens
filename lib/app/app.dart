@@ -24,6 +24,10 @@ import '../features/fees/presentation/screens/fee_dashboard_screen.dart';
 import '../features/fees/presentation/screens/fee_generator_screen.dart';
 import '../features/fees/presentation/screens/fee_overview_screen.dart';
 import '../features/fees/presentation/screens/student_fee_history_screen.dart';
+import '../features/lessons/presentation/screens/lesson_planner_screen.dart';
+import '../features/lessons/presentation/screens/lesson_form_screen.dart';
+import '../features/lessons/presentation/screens/lesson_detail_screen.dart';
+import '../features/lessons/presentation/screens/syllabus_screen.dart';
 import 'app_state.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -145,11 +149,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/lessons',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Lessons',
-          icon: Icons.menu_book_rounded,
-          cta: 'Plan a lesson',
+        builder: (ctx, state) => const LessonPlannerScreen(),
+      ),
+      GoRoute(
+        path: '/lessons/new',
+        builder: (ctx, state) => LessonFormScreen(
+          initialBatchId: state.uri.queryParameters['batchId'],
+          initialDate: state.uri.queryParameters['date'] == null
+              ? null
+              : DateTime.tryParse(state.uri.queryParameters['date']!),
         ),
+      ),
+      GoRoute(
+        path: '/lessons/edit/:id',
+        builder: (ctx, state) =>
+            LessonFormScreen(lessonId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/lessons/:id',
+        builder: (ctx, state) =>
+            LessonDetailScreen(lessonId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/batches/:id/syllabus',
+        builder: (ctx, state) =>
+            SyllabusScreen(batchId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/messages',

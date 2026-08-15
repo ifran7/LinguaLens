@@ -58,7 +58,13 @@ class BatchRepositoryImpl implements BatchRepository {
           .toList();
       await box.deleteAll(keys);
     }
-    for (final boxName in ['attendanceBox', 'feeRecordsBox', 'paymentsBox']) {
+    for (final boxName in [
+      'attendanceBox',
+      'feeRecordsBox',
+      'paymentsBox',
+      'lessonsBox',
+      'syllabusTopicsBox',
+    ]) {
       if (Hive.isBoxOpen(boxName)) {
         final box = Hive.box(boxName);
         final keys = box.keys

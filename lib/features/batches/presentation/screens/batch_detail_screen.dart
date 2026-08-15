@@ -12,6 +12,7 @@ import '../../domain/entities/batch_entity.dart';
 import '../../providers/batch_provider.dart';
 import '../../../fees/providers/fee_provider.dart';
 import '../../../fees/presentation/widgets/fee_summary_card.dart';
+import '../../../lessons/providers/lesson_provider.dart';
 import '../widgets/batch_student_list.dart';
 
 class BatchDetailScreen extends ConsumerStatefulWidget {
@@ -129,6 +130,8 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
               ref.invalidate(batchAttendanceDaySummaryProvider);
               ref.invalidate(batchFeeSummaryProvider(widget.batchId));
               ref.invalidate(feeDashboardProvider);
+              ref.invalidate(batchLessonsProvider(widget.batchId));
+              ref.invalidate(batchSyllabusProgressProvider(widget.batchId));
             },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -170,12 +173,7 @@ class _BatchDetailScreenState extends ConsumerState<BatchDetailScreen> {
                 const SizedBox(height: 18),
                 _BatchFeeSummaryCard(batchId: batch.id),
                 const SizedBox(height: 12),
-                _PlaceholderCard(
-                  icon: Icons.menu_book_outlined,
-                  title: l.t('lessonPlans'),
-                  body: l.t('noLessonPlans'),
-                  action: l.t('addLesson'),
-                ),
+                _BatchLessonSummaryCard(batchId: batch.id),
               ],
             ),
           ),
@@ -358,55 +356,6 @@ class _InfoRow extends StatelessWidget {
   );
 }
 
-class _PlaceholderCard extends StatelessWidget {
-  const _PlaceholderCard({
-    required this.icon,
-    required this.title,
-    required this.body,
-    required this.action,
-  });
-  final IconData icon;
-  final String title;
-  final String body;
-  final String action;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary
-                  .withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: Theme.of(context).colorScheme.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 4),
-                Text(body, style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-          ),
-          TextButton(onPressed: null, child: Text(action)),
-        ],
-      ),
-    ),
-  );
-}
-
 class _BatchFeeSummaryCard extends ConsumerWidget {
   const _BatchFeeSummaryCard({required this.batchId});
 
@@ -491,6 +440,98 @@ class _BatchFeeSummaryCard extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _BatchLessonSummaryCard extends ConsumerWidget {
+  const _BatchLessonSummaryCard({required this.batchId});
+
+  final String batchId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lessons = ref.watch(batchLessonsProvider(batchId));
+    final progress = ref.watch(batchSyllabusProgressProvider(batchId));
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.l10n.t('lessonPlans'),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.push('/lessons?batchId=$batchId'),
+                  child: Text(context.l10n.t('viewAll')),
+                ),
+              ],
+            ),
+            progress.when(
+              loading: () => const LinearProgressIndicator(),
+              error: (_, _) => const SizedBox.shrink(),
+              data: (value) => Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(context.l10n.t('syllabusProgress')),
+                        const SizedBox(height: 6),
+                        LinearProgressIndicator(
+                          value: value.progressPercentage / 100,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    '${value.progressPercentage.round()}%',
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            lessons.when(
+              loading: () => const LinearProgressIndicator(),
+              error: (error, _) => Text(error.toString()),
+              data: (items) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${items.length} ${context.l10n.t('lessonPlans')}'),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () =>
+                            context.push('/lessons/new?batchId=$batchId'),
+                        icon: const Icon(Icons.add, size: 17),
+                        label: Text(context.l10n.t('addLesson')),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () =>
+                            context.push('/batches/$batchId/syllabus'),
+                        icon: const Icon(Icons.menu_book_outlined, size: 17),
+                        label: Text(context.l10n.t('syllabus')),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

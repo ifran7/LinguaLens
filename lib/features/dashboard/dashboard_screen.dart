@@ -11,6 +11,8 @@ import '../attendance/providers/attendance_provider.dart';
 import '../students/providers/student_provider.dart';
 import '../batches/providers/batch_provider.dart';
 import '../fees/providers/fee_provider.dart';
+import '../lessons/providers/lesson_provider.dart';
+import '../lessons/presentation/widgets/lesson_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -171,6 +173,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               SectionHeader(title: l.t('quickActions')),
               const SizedBox(height: 14),
               _QuickActions(),
+              const SizedBox(height: 30),
+              SectionHeader(
+                title: l.t('upcomingLessons'),
+                actionLabel: l.t('viewAll'),
+                onAction: () => context.push('/lessons'),
+              ),
+              const SizedBox(height: 12),
+              ref
+                  .watch(upcomingLessonsProvider)
+                  .when(
+                    loading: () => const LinearProgressIndicator(),
+                    error: (_, _) =>
+                        AppCard(child: Text(l.t('noUpcomingLessons'))),
+                    data: (items) => items.isEmpty
+                        ? AppCard(child: Text(l.t('noUpcomingLessons')))
+                        : Column(
+                            children: items
+                                .take(3)
+                                .map(
+                                  (item) => LessonCard(
+                                    item: item,
+                                    onTap: () => context.push(
+                                      '/lessons/${item.lesson.id}',
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                  ),
               const SizedBox(height: 30),
               SectionHeader(
                 title: l.t('recentActivity'),
