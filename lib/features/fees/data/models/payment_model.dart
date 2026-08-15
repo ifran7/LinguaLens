@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 6)
 class PaymentModel extends HiveObject {
   PaymentModel({
@@ -78,22 +80,19 @@ class PaymentModelAdapter extends TypeAdapter<PaymentModel> {
 
   @override
   PaymentModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return PaymentModel(
-      id: fields[0] as String,
-      feeRecordId: fields[1] as String,
-      studentId: fields[2] as String,
-      batchId: fields[3] as String,
-      monthKey: fields[4] as String,
-      amount: (fields[5] as num).toDouble(),
-      paymentDate: fields[6] as DateTime,
-      paymentMethod: fields[7] as String? ?? 'cash',
-      note: fields[8] as String? ?? '',
-      createdAt: fields[9] as DateTime,
-      updatedAt: fields[10] as DateTime,
+      id: hiveString(fields, 0),
+      feeRecordId: hiveString(fields, 1),
+      studentId: hiveString(fields, 2),
+      batchId: hiveString(fields, 3),
+      monthKey: hiveString(fields, 4),
+      amount: hiveDouble(fields, 5),
+      paymentDate: hiveDate(fields, 6),
+      paymentMethod: hiveString(fields, 7, 'cash'),
+      note: hiveString(fields, 8),
+      createdAt: hiveDate(fields, 9),
+      updatedAt: hiveDate(fields, 10),
     );
   }
 

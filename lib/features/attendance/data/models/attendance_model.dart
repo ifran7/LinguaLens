@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 4)
 class AttendanceModel extends HiveObject {
   AttendanceModel({
@@ -63,19 +65,16 @@ class AttendanceModelAdapter extends TypeAdapter<AttendanceModel> {
 
   @override
   AttendanceModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return AttendanceModel(
-      id: fields[0] as String,
-      studentId: fields[1] as String,
-      batchId: fields[2] as String,
-      date: fields[3] as DateTime,
-      status: fields[4] as String,
-      note: fields[5] as String? ?? '',
-      createdAt: fields[6] as DateTime,
-      updatedAt: fields[7] as DateTime,
+      id: hiveString(fields, 0),
+      studentId: hiveString(fields, 1),
+      batchId: hiveString(fields, 2),
+      date: hiveDate(fields, 3),
+      status: hiveString(fields, 4, 'present'),
+      note: hiveString(fields, 5),
+      createdAt: hiveDate(fields, 6),
+      updatedAt: hiveDate(fields, 7),
     );
   }
 

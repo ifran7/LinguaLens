@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 3)
 class BatchEnrollmentModel extends HiveObject {
   BatchEnrollmentModel({
@@ -70,20 +72,17 @@ class BatchEnrollmentModelAdapter extends TypeAdapter<BatchEnrollmentModel> {
 
   @override
   BatchEnrollmentModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return BatchEnrollmentModel(
-      id: fields[0] as String,
-      studentId: fields[1] as String,
-      batchId: fields[2] as String,
-      joiningDate: fields[3] as DateTime,
-      customFee: (fields[4] as num?)?.toDouble() ?? 0,
-      isActive: fields[5] as bool? ?? true,
-      note: fields[6] as String? ?? '',
-      createdAt: fields[7] as DateTime,
-      updatedAt: fields[8] as DateTime,
+      id: hiveString(fields, 0),
+      studentId: hiveString(fields, 1),
+      batchId: hiveString(fields, 2),
+      joiningDate: hiveDate(fields, 3),
+      customFee: hiveDouble(fields, 4),
+      isActive: hiveBool(fields, 5, true),
+      note: hiveString(fields, 6),
+      createdAt: hiveDate(fields, 7),
+      updatedAt: hiveDate(fields, 8),
     );
   }
 

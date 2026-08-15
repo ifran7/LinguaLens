@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 2)
 class BatchModel extends HiveObject {
   BatchModel({
@@ -71,21 +73,18 @@ class BatchModelAdapter extends TypeAdapter<BatchModel> {
 
   @override
   BatchModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return BatchModel(
-      id: fields[0] as String,
-      name: fields[1] as String,
-      subject: fields[2] as String,
-      description: fields[3] as String? ?? '',
-      scheduleText: fields[4] as String? ?? '',
+      id: hiveString(fields, 0),
+      name: hiveString(fields, 1),
+      subject: hiveString(fields, 2),
+      description: hiveString(fields, 3),
+      scheduleText: hiveString(fields, 4),
       monthlyFeeDefault: (fields[5] as num?)?.toDouble() ?? 0,
-      colorTagIndex: fields[6] as int? ?? 0,
-      isActive: fields[7] as bool? ?? true,
-      createdAt: fields[8] as DateTime,
-      updatedAt: fields[9] as DateTime,
+      colorTagIndex: hiveInt(fields, 6),
+      isActive: hiveBool(fields, 7, true),
+      createdAt: hiveDate(fields, 8),
+      updatedAt: hiveDate(fields, 9),
     );
   }
 

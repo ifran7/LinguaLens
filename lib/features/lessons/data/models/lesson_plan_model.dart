@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 7)
 class LessonPlanModel extends HiveObject {
   LessonPlanModel({
@@ -97,32 +99,22 @@ class LessonPlanModelAdapter extends TypeAdapter<LessonPlanModel> {
 
   @override
   LessonPlanModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return LessonPlanModel(
-      id: fields[0] as String? ?? '',
-      batchId: fields[1] as String? ?? '',
-      title: fields[2] as String? ?? '',
-      description: fields[3] as String? ?? '',
-      lessonDate: fields[4] is DateTime
-          ? fields[4] as DateTime
-          : DateTime.now(),
-      planType: fields[5] as String? ?? 'daily',
-      status: fields[6] as String? ?? 'planned',
-      coveredTopicIds:
-          (fields[7] as List?)?.whereType<String>().toList() ?? const [],
-      homework: fields[8] as String? ?? '',
-      resourceLinks: fields[9] as String? ?? '',
-      durationMinutes: (fields[10] as num?)?.toInt() ?? 0,
-      teacherNote: fields[11] as String? ?? '',
-      createdAt: fields[12] is DateTime
-          ? fields[12] as DateTime
-          : DateTime.now(),
-      updatedAt: fields[13] is DateTime
-          ? fields[13] as DateTime
-          : DateTime.now(),
+      id: hiveString(fields, 0),
+      batchId: hiveString(fields, 1),
+      title: hiveString(fields, 2),
+      description: hiveString(fields, 3),
+      lessonDate: hiveDate(fields, 4),
+      planType: hiveString(fields, 5, 'daily'),
+      status: hiveString(fields, 6, 'planned'),
+      coveredTopicIds: hiveStringList(fields, 7),
+      homework: hiveString(fields, 8),
+      resourceLinks: hiveString(fields, 9),
+      durationMinutes: hiveInt(fields, 10),
+      teacherNote: hiveString(fields, 11),
+      createdAt: hiveDate(fields, 12),
+      updatedAt: hiveDate(fields, 13),
     );
   }
 

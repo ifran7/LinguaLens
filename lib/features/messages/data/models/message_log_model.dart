@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 10)
 class MessageLogModel extends HiveObject {
   MessageLogModel({
@@ -72,21 +74,18 @@ class MessageLogModelAdapter extends TypeAdapter<MessageLogModel> {
 
   @override
   MessageLogModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return MessageLogModel(
-      id: fields[0] as String,
-      studentId: fields[1] as String,
-      batchId: fields[2] as String? ?? '',
-      channel: fields[3] as String? ?? 'whatsapp',
-      recipientPhone: fields[4] as String? ?? '',
-      messageBody: fields[5] as String? ?? '',
-      templateId: fields[6] as String? ?? '',
-      category: fields[7] as String? ?? 'custom',
-      teacherNote: fields[8] as String? ?? '',
-      sentAt: fields[9] as DateTime,
+      id: hiveString(fields, 0),
+      studentId: hiveString(fields, 1),
+      batchId: hiveString(fields, 2),
+      channel: hiveString(fields, 3, 'whatsapp'),
+      recipientPhone: hiveString(fields, 4),
+      messageBody: hiveString(fields, 5),
+      templateId: hiveString(fields, 6),
+      category: hiveString(fields, 7, 'custom'),
+      teacherNote: hiveString(fields, 8),
+      sentAt: hiveDate(fields, 9),
     );
   }
 

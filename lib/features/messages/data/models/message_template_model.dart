@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 9)
 class MessageTemplateModel extends HiveObject {
   MessageTemplateModel({
@@ -68,20 +70,17 @@ class MessageTemplateModelAdapter extends TypeAdapter<MessageTemplateModel> {
 
   @override
   MessageTemplateModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return MessageTemplateModel(
-      id: fields[0] as String? ?? '',
-      title: fields[1] as String? ?? '',
-      bodyEn: fields[2] as String? ?? '',
-      bodyBn: fields[3] as String? ?? '',
-      category: fields[4] as String? ?? 'custom',
-      isDefault: fields[5] as bool? ?? false,
-      usageCount: fields[6] as int? ?? 0,
-      createdAt: fields[7] as DateTime? ?? DateTime.now(),
-      updatedAt: fields[8] as DateTime? ?? DateTime.now(),
+      id: hiveString(fields, 0),
+      title: hiveString(fields, 1),
+      bodyEn: hiveString(fields, 2),
+      bodyBn: hiveString(fields, 3),
+      category: hiveString(fields, 4, 'custom'),
+      isDefault: hiveBool(fields, 5),
+      usageCount: hiveInt(fields, 6),
+      createdAt: hiveDate(fields, 7),
+      updatedAt: hiveDate(fields, 8),
     );
   }
 

@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 5)
 class FeeRecordModel extends HiveObject {
   FeeRecordModel({
@@ -71,21 +73,18 @@ class FeeRecordModelAdapter extends TypeAdapter<FeeRecordModel> {
 
   @override
   FeeRecordModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return FeeRecordModel(
-      id: fields[0] as String,
-      studentId: fields[1] as String,
-      batchId: fields[2] as String,
-      monthKey: fields[3] as String,
-      assignedFee: (fields[4] as num).toDouble(),
-      discountAmount: (fields[5] as num?)?.toDouble() ?? 0,
-      finalFee: (fields[6] as num).toDouble(),
-      note: fields[7] as String? ?? '',
-      createdAt: fields[8] as DateTime,
-      updatedAt: fields[9] as DateTime,
+      id: hiveString(fields, 0),
+      studentId: hiveString(fields, 1),
+      batchId: hiveString(fields, 2),
+      monthKey: hiveString(fields, 3),
+      assignedFee: hiveDouble(fields, 4),
+      discountAmount: hiveDouble(fields, 5),
+      finalFee: hiveDouble(fields, 6),
+      note: hiveString(fields, 7),
+      createdAt: hiveDate(fields, 8),
+      updatedAt: hiveDate(fields, 9),
     );
   }
 

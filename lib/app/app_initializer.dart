@@ -69,29 +69,38 @@ class AppInitializer {
   static Future<void> _openBoxes() async {
     await _runStep(
       'students box',
-      () => _open<StudentModel>(HiveBoxes.students),
+      () => _open<StudentModel>(HiveBoxes.students, recover: true),
     );
-    await _runStep('batches box', () => _open<BatchModel>(HiveBoxes.batches));
+    await _runStep(
+      'batches box',
+      () => _open<BatchModel>(HiveBoxes.batches, recover: true),
+    );
     await _runStep(
       'enrollments box',
-      () => _open<BatchEnrollmentModel>(HiveBoxes.batchEnrollments),
+      () => _open<BatchEnrollmentModel>(
+        HiveBoxes.batchEnrollments,
+        recover: true,
+      ),
     );
     await _runStep(
       'attendance box',
-      () => _open<AttendanceModel>(HiveBoxes.attendance),
+      () => _open<AttendanceModel>(HiveBoxes.attendance, recover: true),
     );
-    await _runStep('fees box', () => _open<FeeRecordModel>(HiveBoxes.fees));
+    await _runStep(
+      'fees box',
+      () => _open<FeeRecordModel>(HiveBoxes.fees, recover: true),
+    );
     await _runStep(
       'payments box',
-      () => _open<PaymentModel>(HiveBoxes.payments),
+      () => _open<PaymentModel>(HiveBoxes.payments, recover: true),
     );
     await _runStep(
       'lessons box',
-      () => _open<LessonPlanModel>(HiveBoxes.lessons),
+      () => _open<LessonPlanModel>(HiveBoxes.lessons, recover: true),
     );
     await _runStep(
       'syllabus topics box',
-      () => _open<SyllabusTopicModel>(HiveBoxes.syllabusTopics),
+      () => _open<SyllabusTopicModel>(HiveBoxes.syllabusTopics, recover: true),
     );
     await _runStep(
       'message templates box',
@@ -112,7 +121,10 @@ class AppInitializer {
       'settings box',
       () => _open<AppSettingsModel>(HiveBoxes.settings, recover: true),
     );
-    await _runStep('metadata box', () => _open<dynamic>(HiveBoxes.meta));
+    await _runStep(
+      'metadata box',
+      () => _open<dynamic>(HiveBoxes.meta, recover: true),
+    );
     await _runStep('metadata validation', _validateMetadataBoxes);
   }
 

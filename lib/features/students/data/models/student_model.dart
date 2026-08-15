@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 1)
 class StudentModel extends HiveObject {
   StudentModel({
@@ -109,31 +111,25 @@ class StudentModelAdapter extends TypeAdapter<StudentModel> {
 
   @override
   StudentModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return StudentModel(
-      id: fields[0] as String,
-      fullName: fields[1] as String,
-      studentCode: fields[2] as String,
-      phone: fields[3] as String? ?? '',
-      parentName: fields[4] as String? ?? '',
-      parentPhone: fields[5] as String,
-      address: fields[6] as String? ?? '',
-      schoolName: fields[7] as String? ?? '',
-      className: fields[8] as String,
-      notes: fields[9] as String? ?? '',
-      photoPath: fields[10] as String? ?? '',
-      isActive: fields[11] as bool? ?? true,
-      createdAt: fields[12] as DateTime,
-      updatedAt: fields[13] as DateTime,
-      preferredStartTime: fields[14] as String? ?? '',
-      preferredWeekdays: (fields[15] as List<dynamic>? ?? const [])
-          .whereType<num>()
-          .map((value) => value.toInt())
-          .toList(),
-      preferredScheduleNote: fields[16] as String? ?? '',
+      id: hiveString(fields, 0),
+      fullName: hiveString(fields, 1),
+      studentCode: hiveString(fields, 2),
+      phone: hiveString(fields, 3),
+      parentName: hiveString(fields, 4),
+      parentPhone: hiveString(fields, 5),
+      address: hiveString(fields, 6),
+      schoolName: hiveString(fields, 7),
+      className: hiveString(fields, 8),
+      notes: hiveString(fields, 9),
+      photoPath: hiveString(fields, 10),
+      isActive: hiveBool(fields, 11, true),
+      createdAt: hiveDate(fields, 12),
+      updatedAt: hiveDate(fields, 13),
+      preferredStartTime: hiveString(fields, 14),
+      preferredWeekdays: hiveIntList(fields, 15),
+      preferredScheduleNote: hiveString(fields, 16),
     );
   }
 

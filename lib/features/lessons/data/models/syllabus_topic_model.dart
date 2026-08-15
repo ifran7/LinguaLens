@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../../../../core/utils/hive_adapter_helpers.dart';
+
 @HiveType(typeId: 8)
 class SyllabusTopicModel extends HiveObject {
   SyllabusTopicModel({
@@ -78,24 +80,19 @@ class SyllabusTopicModelAdapter extends TypeAdapter<SyllabusTopicModel> {
 
   @override
   SyllabusTopicModel read(BinaryReader reader) {
-    final fields = <int, dynamic>{
-      for (var i = 0; i < reader.readByte(); i++)
-        reader.readByte(): reader.read(),
-    };
+    final fields = readHiveFields(reader);
     return SyllabusTopicModel(
-      id: fields[0] as String? ?? '',
-      batchId: fields[1] as String? ?? '',
-      title: fields[2] as String? ?? '',
-      description: fields[3] as String? ?? '',
-      orderIndex: (fields[4] as num?)?.toInt() ?? 0,
-      isCompleted: fields[5] as bool? ?? false,
-      completedDate: fields[6] is DateTime ? fields[6] as DateTime : null,
-      chapterName: fields[7] as String? ?? '',
-      estimatedClasses: (fields[8] as num?)?.toInt() ?? 1,
-      createdAt: fields[9] is DateTime ? fields[9] as DateTime : DateTime.now(),
-      updatedAt: fields[10] is DateTime
-          ? fields[10] as DateTime
-          : DateTime.now(),
+      id: hiveString(fields, 0),
+      batchId: hiveString(fields, 1),
+      title: hiveString(fields, 2),
+      description: hiveString(fields, 3),
+      orderIndex: hiveInt(fields, 4),
+      isCompleted: hiveBool(fields, 5),
+      completedDate: hiveNullableDate(fields, 6),
+      chapterName: hiveString(fields, 7),
+      estimatedClasses: hiveInt(fields, 8, 1),
+      createdAt: hiveDate(fields, 9),
+      updatedAt: hiveDate(fields, 10),
     );
   }
 
