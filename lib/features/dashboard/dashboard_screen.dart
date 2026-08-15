@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_widgets.dart';
+import '../students/providers/student_provider.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref.read(studentsListProvider.notifier).loadStudents(),
+    );
+  }
 
   void _selectTab(int index) {
     setState(() => _selectedIndex = index);
@@ -101,7 +111,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   MetricCard(
                     label: l.t('totalStudents'),
-                    value: '0',
+                    value: ref
+                        .watch(studentsListProvider)
+                        .activeCount
+                        .toString(),
                     icon: Icons.people_alt_rounded,
                     color: AppColors.primary,
                     onTap: () => context.push('/students'),

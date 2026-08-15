@@ -8,6 +8,9 @@ import '../features/dashboard/dashboard_screen.dart';
 import '../features/modules/module_screens.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/students/presentation/screens/student_detail_screen.dart';
+import '../features/students/presentation/screens/student_form_screen.dart';
+import '../features/students/presentation/screens/students_list_screen.dart';
 import 'app_state.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -25,28 +28,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/students',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Students',
-          icon: Icons.people_alt_rounded,
-          cta: 'Add student',
-          onPressed: () => ctx.push('/students/add'),
-        ),
+        builder: (ctx, state) => const StudentsListScreen(),
       ),
       GoRoute(
         path: '/students/add',
-        builder: (ctx, state) => const AddFormScreen(
-          title: 'Add student',
-          label: 'Student name',
-          icon: Icons.person_add_alt_1_rounded,
-        ),
+        builder: (ctx, state) => const StudentFormScreen(),
+      ),
+      GoRoute(
+        path: '/students/edit/:id',
+        builder: (ctx, state) =>
+            StudentEditLoader(studentId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/students/:id',
-        builder: (ctx, state) => ModuleScreen(
-          title: 'Student details',
-          icon: Icons.person_rounded,
-          cta: 'Add student',
-        ),
+        builder: (ctx, state) =>
+            StudentDetailScreen(studentId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/batches',

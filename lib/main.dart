@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'app/app.dart';
 import 'core/services/local_storage_service.dart';
 import 'core/theme/app_theme.dart';
+import 'features/students/data/models/student_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalStorageService.instance.init();
+  await Hive.initFlutter();
+  if (!Hive.isAdapterRegistered(1)) {
+    Hive.registerAdapter(StudentModelAdapter());
+  }
+  await Hive.openBox<StudentModel>('studentsBox');
+  await Hive.openBox('metaBox');
   runApp(const ProviderScope(child: LinguaLensApp()));
 }
 
