@@ -19,8 +19,8 @@ extension AttendanceStatusX on AttendanceStatus {
   Color get color => switch (this) {
     AttendanceStatus.present => AppColors.success,
     AttendanceStatus.absent => AppColors.danger,
-    AttendanceStatus.late => Colors.orange,
-    AttendanceStatus.leave => Colors.blueGrey,
+    AttendanceStatus.late => AppColors.warning,
+    AttendanceStatus.leave => const Color(0xFF64748B),
   };
 
   IconData get icon => switch (this) {

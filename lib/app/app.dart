@@ -7,6 +7,7 @@ import '../core/localization/app_localizations.dart';
 import '../core/theme/app_theme.dart';
 import '../core/utils/error_handler.dart';
 import '../core/widgets/app_shell.dart';
+import '../features/attendance/presentation/screens/attendance_calendar_screen.dart';
 import '../features/attendance/presentation/screens/attendance_home_screen.dart';
 import '../features/attendance/presentation/screens/attendance_session_screen.dart';
 import '../features/attendance/presentation/screens/student_attendance_screen.dart';
@@ -120,6 +121,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: RouteNames.attendanceCalendar,
+                builder: (context, state) => const AttendanceCalendarScreen(),
+              ),
+              GoRoute(
+                path: RouteNames.studentAttendanceCalendar,
                 builder: (context, state) => StudentAttendanceScreen(
                   studentId: state.pathParameters['id']!,
                   batchId: state.uri.queryParameters['batchId'],

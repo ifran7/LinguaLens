@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../batches/domain/entities/batch_entity.dart';
 import '../../batches/providers/batch_provider.dart';
+import '../../students/domain/entities/student_entity.dart';
 import '../../students/providers/student_provider.dart';
 import '../data/repositories/attendance_repository_impl.dart';
 import '../domain/entities/attendance_entity.dart';
@@ -160,6 +161,67 @@ final studentAttendanceSummaryProvider =
           .read(attendanceRepositoryProvider)
           .getStudentAttendanceSummary(studentId),
     );
+
+class AttendanceCalendarMonthArgs {
+  const AttendanceCalendarMonthArgs({required this.month});
+
+  final DateTime month;
+
+  DateTime get startDate => DateTime(month.year, month.month, 1);
+  DateTime get endDate => DateTime(month.year, month.month + 1, 0);
+
+  @override
+  bool operator ==(Object other) =>
+      other is AttendanceCalendarMonthArgs &&
+      other.month.year == month.year &&
+      other.month.month == month.month;
+
+  @override
+  int get hashCode => Object.hash(month.year, month.month);
+}
+
+class AttendanceCalendarMonthData {
+  const AttendanceCalendarMonthData({
+    required this.records,
+    required this.studentsById,
+    required this.batchesById,
+  });
+
+  final List<AttendanceEntity> records;
+  final Map<String, StudentEntity> studentsById;
+  final Map<String, BatchEntity> batchesById;
+
+  Map<String, List<AttendanceEntity>> get recordsByDay {
+    final grouped = <String, List<AttendanceEntity>>{};
+    for (final record in records) {
+      grouped.putIfAbsent(dateKey(record.date), () => []).add(record);
+    }
+    return grouped;
+  }
+}
+
+final attendanceCalendarMonthProvider =
+    FutureProvider.family<
+      AttendanceCalendarMonthData,
+      AttendanceCalendarMonthArgs
+    >((ref, args) async {
+      final results = await Future.wait([
+        ref.read(attendanceRepositoryProvider).getAllAttendance(),
+        ref.read(studentRepositoryProvider).getAllStudents(),
+        ref.read(batchRepositoryProvider).getAllBatches(),
+      ]);
+      final records = (results[0] as List<AttendanceEntity>).where((record) {
+        final date = normalizeDate(record.date);
+        return !date.isBefore(args.startDate) && !date.isAfter(args.endDate);
+      }).toList()..sort((a, b) => a.date.compareTo(b.date));
+      final students = results[1] as List<StudentEntity>;
+      final batches = results[2] as List<BatchEntity>;
+      return AttendanceCalendarMonthData(
+        records: records,
+        studentsById: {for (final student in students) student.id: student},
+        batchesById: {for (final batch in batches) batch.id: batch},
+      );
+    });
 
 final studentAttendanceCalendarProvider =
     FutureProvider.family<

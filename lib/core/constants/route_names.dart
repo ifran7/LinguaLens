@@ -17,7 +17,8 @@ class RouteNames {
   static const batchSyllabus = '/batches/:id/syllabus';
   static const attendance = '/attendance';
   static const attendanceBatch = '/attendance/batch/:batchId';
-  static const attendanceCalendar = '/attendance/student/:id/calendar';
+  static const attendanceCalendar = '/attendance/calendar';
+  static const studentAttendanceCalendar = '/attendance/student/:id/calendar';
   static const fees = '/fees';
   static const feeOverview = '/fees/overview';
   static const feeStudent = '/fees/student/:studentId';
