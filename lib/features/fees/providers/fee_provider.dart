@@ -90,7 +90,7 @@ class FeeDashboardNotifier extends Notifier<FeeDashboardState> {
     try {
       final feeRepo = ref.read(feeRepositoryProvider);
       final paymentRepo = ref.read(paymentRepositoryProvider);
-      final results = await Future.wait([
+      final results = await Future.wait<Object?>([
         feeRepo.getFeeAggregateByMonthKey(key),
         feeRepo.getOverdueFeeRecords(),
         feeRepo.getUnpaidFeeRecords(),
@@ -100,11 +100,17 @@ class FeeDashboardNotifier extends Notifier<FeeDashboardState> {
       ]);
       state = state.copyWith(
         aggregate: results[0] as FeeAggregate,
-        overdueRecords: results[1] as List<FeeRecordEntity>,
-        recentUnpaid: results[2] as List<FeeRecordEntity>,
-        recentPayments: results[3] as List<PaymentEntity>,
-        collectedToday: results[4] as double,
-        collectedThisMonth: results[5] as double,
+        overdueRecords: List<FeeRecordEntity>.from(
+          results[1]! as List<FeeRecordEntity>,
+        ),
+        recentUnpaid: List<FeeRecordEntity>.from(
+          results[2]! as List<FeeRecordEntity>,
+        ),
+        recentPayments: List<PaymentEntity>.from(
+          results[3]! as List<PaymentEntity>,
+        ),
+        collectedToday: (results[4]! as num).toDouble(),
+        collectedThisMonth: (results[5]! as num).toDouble(),
         isLoading: false,
       );
     } catch (error) {

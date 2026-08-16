@@ -205,17 +205,19 @@ final attendanceCalendarMonthProvider =
       AttendanceCalendarMonthData,
       AttendanceCalendarMonthArgs
     >((ref, args) async {
-      final results = await Future.wait([
+      final results = await Future.wait<Object?>([
         ref.read(attendanceRepositoryProvider).getAllAttendance(),
         ref.read(studentRepositoryProvider).getAllStudents(),
         ref.read(batchRepositoryProvider).getAllBatches(),
       ]);
-      final records = (results[0] as List<AttendanceEntity>).where((record) {
+      final records = (results[0]! as List<AttendanceEntity>).where((record) {
         final date = normalizeDate(record.date);
         return !date.isBefore(args.startDate) && !date.isAfter(args.endDate);
       }).toList()..sort((a, b) => a.date.compareTo(b.date));
-      final students = results[1] as List<StudentEntity>;
-      final batches = results[2] as List<BatchEntity>;
+      final students = List<StudentEntity>.from(
+        results[1]! as List<StudentEntity>,
+      );
+      final batches = List<BatchEntity>.from(results[2]! as List<BatchEntity>);
       return AttendanceCalendarMonthData(
         records: records,
         studentsById: {for (final student in students) student.id: student},
